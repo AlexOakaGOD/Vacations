@@ -20,50 +20,45 @@
             --orange: #e3b341; --toggle-bg: #30363d;
         }
 
-        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); display: flex; margin: 0; height: 100vh; overflow: hidden; transition: 0.2s; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); display: flex; margin: 0; height: 100vh; overflow: hidden; }
         
         .sidebar { width: 300px; background: var(--card); padding: 20px; border-right: 1px solid var(--border); display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box; position: relative; }
         .main { flex-grow: 1; padding: 25px; overflow-y: auto; }
 
-        .theme-toggle { 
-            position: absolute; top: 18px; right: 20px; 
-            background: var(--toggle-bg); border: 1px solid var(--border); 
-            padding: 6px 12px; border-radius: 50px; font-size: 16px; 
-            cursor: pointer; color: var(--text); z-index: 100;
-        }
+        .theme-toggle { position: absolute; top: 18px; right: 20px; background: var(--toggle-bg); border: 1px solid var(--border); padding: 6px 12px; border-radius: 50px; cursor: pointer; color: var(--text); z-index: 100; }
 
-        button { cursor: pointer; border-radius: 6px; border: none; padding: 10px; width: 100%; font-weight: bold; transition: 0.2s; margin-bottom: 8px; }
-        .btn-google { background: #24292f; color: white; border: 1px solid transparent; }
+        button { cursor: pointer; border-radius: 6px; border: none; padding: 10px; width: 100%; font-weight: bold; margin-bottom: 8px; }
+        .btn-google { background: #24292f; color: white; }
         [data-theme="light"] .btn-google { background: white; color: #444; border: 1px solid #ddd; }
-        
         .btn-save { background: var(--green); color: white; }
         .btn-pdf { background: #8250df; color: white; }
-        .btn-logout { background: transparent; color: #8b949e; border: 1px solid var(--border); font-size: 11px; margin-top: 15px; }
+        .btn-logout { background: transparent; color: #8b949e; border: 1px solid var(--border); font-size: 11px; }
 
-        table { border-collapse: collapse; width: 100%; background: var(--card); font-size: 11px; color: var(--text); table-layout: fixed; }
-        th, td { border: 1px solid var(--border); height: 32px; text-align: center; position: relative; overflow: hidden; }
-        th { background: rgba(0,0,0,0.05); color: #8b949e; font-size: 10px; }
-        .month-name { background: rgba(0,0,0,0.05); text-align: left; padding-left: 8px; font-weight: bold; width: 90px; font-size: 11px; }
+        /* Estilos da Tabela */
+        #calendar-container { background: white; padding: 20px; border-radius: 8px; }
+        table { border-collapse: collapse; width: 100%; background: white; font-size: 10px; color: #333; table-layout: fixed; }
+        th, td { border: 1px solid #ddd; height: 28px; text-align: center; position: relative; }
+        th { background: #f1f1f1; color: #666; }
+        .month-name { background: #f1f1f1; text-align: left; padding-left: 5px; font-weight: bold; width: 80px; color: #333; }
         
         .day { cursor: pointer; }
-        .weekend { color: var(--orange); background: rgba(154, 103, 0, 0.05); }
-        .holiday { color: var(--red); background: rgba(207, 34, 46, 0.05); }
+        .weekend { background: #fffcf0; color: #9a6700; }
+        .holiday { background: #fff5f5; color: #cf222e; }
 
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin: 15px 0; text-align: center; }
-        .stat-box { background: var(--stat-bg); padding: 8px; border-radius: 6px; border: 1px solid var(--border); }
+        /* Stats */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin: 15px 0; }
+        .stat-box { background: var(--stat-bg); padding: 8px; border-radius: 6px; border: 1px solid var(--border); text-align: center; }
         .stat-val { display: block; font-size: 18px; font-weight: bold; }
         .stat-lbl { font-size: 9px; color: #8b949e; text-transform: uppercase; }
-        
         .control-btns { display: flex; gap: 4px; justify-content: center; margin-top: 5px; }
         .btn-mini { width: 22px; padding: 2px; font-size: 12px; background: var(--border); color: var(--text); margin: 0; }
 
+        /* Legenda */
         .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; font-size: 12px; }
         .color-box { width: 12px; height: 12px; border-radius: 2px; border: 1px solid rgba(0,0,0,0.1); }
 
-        /* Estilo para PDF: Força cores de fundo a serem impressas */
-        .pdf-mode { color: black !important; background: white !important; }
-        .pdf-mode table { border-color: #ccc !important; }
-        .pdf-mode td { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        /* Elementos escondidos no browser, visíveis no PDF */
+        #pdf-footer { display: none; margin-top: 20px; border-top: 1px solid #eee; padding-top: 10px; }
     </style>
 </head>
 <body data-theme="light">
@@ -96,9 +91,15 @@
     <div id="footerSidebar" style="display:none; text-align: center;"><button id="btnLogout" class="btn-logout">Sair da Conta</button></div>
 </div>
 
-<div class="main" id="calendar-area">
-    <h2 id="pdfHeader" style="display:none; color:black; margin-bottom:20px;">Plano de Férias 2026</h2>
-    <table id="calendar"></table>
+<div class="main">
+    <div id="calendar-container">
+        <h2 id="pdf-title" style="display:none; color: black; margin-bottom: 15px;">Plano de Férias da Equipa - 2026</h2>
+        <table id="calendar"></table>
+        <div id="pdf-footer">
+            <strong>Legenda:</strong>
+            <div id="legend-pdf" style="display: flex; flex-wrap: wrap; gap: 15px; margin-top: 10px;"></div>
+        </div>
+    </div>
 </div>
 
 <script type="module">
@@ -122,11 +123,11 @@
     let membros = {}; let todasFerias = {}; let userEmailEncoded = ""; let minhasFerias = [];
     const FERIADOS = ["2026-01-01", "2026-04-03", "2026-04-25", "2026-05-01", "2026-06-10", "2026-08-15", "2026-10-05", "2026-11-01", "2026-12-01", "2026-12-08", "2026-12-25"];
 
+    // Tema
     const toggle = document.getElementById('themeToggle');
     const savedTheme = localStorage.getItem('theme') || 'light';
     document.body.setAttribute('data-theme', savedTheme);
     toggle.innerText = savedTheme === 'dark' ? '☀️' : '🌙';
-
     toggle.onclick = () => {
         let theme = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
         document.body.setAttribute('data-theme', theme);
@@ -151,9 +152,13 @@
     }
 
     function renderLegend() {
-        const legend = document.getElementById('legend'); legend.innerHTML = "";
+        const legend = document.getElementById('legend');
+        const legendPdf = document.getElementById('legend-pdf');
+        legend.innerHTML = ""; legendPdf.innerHTML = "";
         Object.entries(membros).forEach(([email, d]) => {
-            legend.innerHTML += `<div class="legend-item"><div class="color-box" style="background:${d.cor}"></div> ${d.nome}</div>`;
+            const html = `<div class="legend-item"><div class="color-box" style="background:${d.cor}"></div> ${d.nome}</div>`;
+            legend.innerHTML += html;
+            legendPdf.innerHTML += html;
         });
     }
 
@@ -177,29 +182,14 @@
                 let usersNoDia = Object.keys(todasFerias).filter(e => todasFerias[e]?.includes(dStr));
                 if (usersNoDia.length === 1) {
                     cell.style.backgroundColor = membros[usersNoDia[0]]?.cor || '';
-                    cell.style.color = 'white';
                 } else if (usersNoDia.length > 1) {
                     let c1 = membros[usersNoDia[0]]?.cor || '#333';
                     let c2 = membros[usersNoDia[1]]?.cor || '#666';
                     cell.style.background = `linear-gradient(135deg, ${c1} 50%, ${c2} 50%)`;
-                    cell.style.color = 'white';
-                } else {
-                    cell.style.backgroundColor = "";
-                    cell.style.background = "";
-                    cell.style.color = "";
                 }
-
                 cell.onclick = () => {
-                    if (minhasFerias.includes(dStr)) {
-                        minhasFerias = minhasFerias.filter(v => v !== dStr);
-                    } else {
-                        const total = membros[userEmailEncoded]?.totalDias || 22;
-                        if (minhasFerias.length >= total) {
-                            alert("Já atingiste o teu limite de dias!");
-                            return;
-                        }
-                        minhasFerias.push(dStr);
-                    }
+                    if (minhasFerias.includes(dStr)) minhasFerias = minhasFerias.filter(v => v !== dStr);
+                    else if (minhasFerias.length < (membros[userEmailEncoded]?.totalDias || 22)) minhasFerias.push(dStr);
                     todasFerias[userEmailEncoded] = minhasFerias;
                     render();
                 };
@@ -207,8 +197,7 @@
             }
             while(row.cells.length < 38) row.insertCell();
         });
-
-        const total = membros[userEmailEncoded]?.totalDias !== undefined ? membros[userEmailEncoded].totalDias : 22;
+        const total = membros[userEmailEncoded]?.totalDias ?? 22;
         document.getElementById('statTotal').innerText = total;
         document.getElementById('statUsed').innerText = minhasFerias.length;
         document.getElementById('statLeft').innerText = total - minhasFerias.length;
@@ -216,40 +205,41 @@
 
     document.getElementById('btnInc').onclick = () => ajustarDias(1);
     document.getElementById('btnDec').onclick = () => ajustarDias(-1);
-
     async function ajustarDias(valor) {
-        const totalAtual = membros[userEmailEncoded]?.totalDias !== undefined ? membros[userEmailEncoded].totalDias : 22;
-        const novoTotal = totalAtual + valor;
-        if(novoTotal < 0) return;
-        await update(ref(db, `membros/${userEmailEncoded}`), { totalDias: novoTotal });
+        const total = (membros[userEmailEncoded]?.totalDias ?? 22) + valor;
+        if(total >= 0) await update(ref(db, `membros/${userEmailEncoded}`), { totalDias: total });
     }
 
-    // Exportar PDF Corrigido
-    document.getElementById('btnExport').onclick = () => {
-        const area = document.getElementById('calendar-area');
-        const header = document.getElementById('pdfHeader');
-        
-        // Preparar para o PDF
-        header.style.display = 'block';
-        area.classList.add('pdf-mode');
+    // EXPORTAÇÃO PDF CORRIGIDA
+    document.getElementById('btnExport').onclick = async () => {
+        const container = document.getElementById('calendar-container');
+        const title = document.getElementById('pdf-title');
+        const footer = document.getElementById('pdf-footer');
+
+        // Mostrar elementos do PDF
+        title.style.display = 'block';
+        footer.style.display = 'block';
 
         const opt = {
-            margin: 5,
-            filename: 'Mapa_Ferias_Equipa_2026.pdf',
-            image: { type: 'jpeg', quality: 0.98 },
+            margin: 10,
+            filename: 'Férias_2026.pdf',
+            image: { type: 'jpeg', quality: 1 },
             html2canvas: { 
                 scale: 2, 
-                useCORS: true, 
-                logging: false,
-                backgroundColor: '#ffffff'
+                useCORS: true,
+                letterRendering: true,
+                backgroundColor: '#ffffff' 
             },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
         };
 
-        html2pdf().set(opt).from(area).save().then(() => {
-            header.style.display = 'none';
-            area.classList.remove('pdf-mode');
-        });
+        try {
+            await html2pdf().set(opt).from(container).save();
+        } finally {
+            // Esconder novamente no browser
+            title.style.display = 'none';
+            footer.style.display = 'none';
+        }
     };
 
     onAuthStateChanged(auth, (u) => { u ? checkAccess(u) : (document.getElementById('userArea').style.display = 'none', document.getElementById('btnLogin').style.display = 'block'); });
