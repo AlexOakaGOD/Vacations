@@ -35,16 +35,13 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.4); table-layout: fixed; width: 1050px; 
         }
         
-        th, td { border: 1px solid var(--border); width: 26px; height: 28px; text-align: center; padding: 0; box-sizing: border-box; position: relative; }
+        th, td { border: 1px solid var(--border); width: 26px; height: 28px; text-align: center; padding: 0; box-sizing: border-box; }
         .month-name { background: rgba(128, 128, 128, 0.15); text-align: left; padding-left: 8px; font-weight: bold; width: 60px; }
         
-        .day { cursor: pointer; transition: 0.1s; z-index: 1; }
+        .day { cursor: pointer; transition: 0.1s; position: relative; }
         .day:hover { filter: brightness(1.2); }
 
-        /* Estilo para os números quando há fundo colorido */
-        .has-color { color: white !important; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
-
-        /* LEGENDA */
+        /* LEGENDA CLICÁVEL */
         .legend-item { 
             display: flex; align-items: center; justify-content: space-between; 
             font-size: 11px; margin-bottom: 6px; cursor: pointer; 
@@ -54,6 +51,7 @@
         .legend-item:hover { background: rgba(255,255,255,0.08); }
         .legend-item.hidden { opacity: 0.3; filter: grayscale(1); }
 
+        .color-dot { width: 12px; height: 12px; border-radius: 3px; margin-right: 8px; }
         .theme-toggle, .btn-logout-top { background: var(--toggle-bg); border: 1px solid var(--border); width: 32px; height: 32px; border-radius: 50%; cursor: pointer; color: var(--text); display: flex; align-items: center; justify-content: center; }
         button { cursor: pointer; border-radius: 6px; border: none; padding: 8px; width: 100%; font-weight: bold; margin-bottom: 6px; font-size: 13px; }
         .btn-save { background: var(--green); color: white; }
@@ -62,7 +60,6 @@
         .stat-box { background: var(--stat-bg); padding: 5px; border-radius: 6px; border: 1px solid var(--border); text-align: center; }
         .stat-val { display: block; font-size: 16px; font-weight: bold; }
         .stat-lbl { font-size: 8px; color: #8b949e; text-transform: uppercase; }
-        .color-dot { width: 12px; height: 12px; border-radius: 3px; margin-right: 8px; }
         .sobra-pill { font-weight: bold; background: var(--toggle-bg); padding: 1px 6px; border-radius: 8px; font-size: 10px; }
         .period-item { font-size: 10px; padding: 6px; background: var(--stat-bg); border: 1px solid var(--border); border-radius: 4px; margin-bottom: 4px; border-left: 3px solid var(--blue); }
     </style>
@@ -93,7 +90,7 @@
         <button class="btn-pdf" id="btnExport">Gerar PDF</button>
         <div id="status" style="font-size:11px; text-align:center; color: var(--green); margin: 4px 0;"></div>
         
-        <div style="font-size:9px; color:#8b949e; margin: 10px 0 5px 0; text-transform: uppercase; font-weight: bold;">Filtros Visuais:</div>
+        <div style="font-size:9px; color:#8b949e; margin: 10px 0 5px 0; text-transform: uppercase; font-weight: bold;">Filtros:</div>
         <div id="legend"></div>
         
         <div style="font-size:9px; color:#8b949e; margin: 15px 0 5px 0; text-transform: uppercase; font-weight: bold;">Meus Períodos:</div>
@@ -124,22 +121,9 @@
     const provider = new GoogleAuthProvider();
 
     let membros = {}; let todasFerias = {}; let userEmailEncoded = ""; let minhasFerias = [];
-    let filtrosAtivos = { "descanso": true }; // O filtro de descanso começa ativo
+    let filtrosAtivos = { "descanso": true }; // Controla o utilizador virtual
 
     const FERIADOS = ["2026-01-01", "2026-04-03", "2026-04-05", "2026-04-25", "2026-05-01", "2026-06-04", "2026-06-10", "2026-08-15", "2026-10-05", "2026-11-01", "2026-12-01", "2026-12-08", "2026-12-25"];
-
-    const themeBtn = document.getElementById('themeToggle');
-    themeBtn.onclick = () => {
-        const current = document.body.getAttribute('data-theme');
-        const next = current === 'dark' ? 'light' : 'dark';
-        document.body.setAttribute('data-theme', next);
-        themeBtn.innerText = next === 'dark' ? '☀️' : '🌙';
-    };
-
-    function isDiaUtil(dStr) {
-        const d = new Date(dStr + "T00:00:00");
-        return (d.getDay() !== 0 && d.getDay() !== 6 && !FERIADOS.includes(dStr));
-    }
 
     async function checkAccess(user) {
         userEmailEncoded = user.email.replace(/\./g, '_');
@@ -162,14 +146,14 @@
         const leg = document.getElementById('legend');
         leg.innerHTML = "";
 
-        // Adiciona Filtro de Descanso (FDS/Feriado)
-        const itemDescanso = document.createElement('div');
-        itemDescanso.className = `legend-item ${!filtrosAtivos["descanso"] ? 'hidden' : ''}`;
-        itemDescanso.innerHTML = `<div><div class="color-dot" style="display:inline-block;background:linear-gradient(to right, var(--orange), var(--red))"></div> Descanso (FDS/Feriado)</div>`;
-        itemDescanso.onclick = () => { filtrosAtivos["descanso"] = !filtrosAtivos["descanso"]; render(); };
-        leg.appendChild(itemDescanso);
+        // Legenda do Utilizador Virtual "Descanso"
+        const itemD = document.createElement('div');
+        itemD.className = `legend-item ${!filtrosAtivos["descanso"] ? 'hidden' : ''}`;
+        itemD.innerHTML = `<div><div class="color-dot" style="display:inline-block;background:linear-gradient(135deg, var(--orange) 50%, var(--red) 50%)"></div> Descanso (FDS/Feriado)</div>`;
+        itemD.onclick = () => { filtrosAtivos["descanso"] = !filtrosAtivos["descanso"]; render(); };
+        leg.appendChild(itemD);
 
-        // Adiciona Membros
+        // Legenda dos Membros Reais
         Object.entries(membros).forEach(([email, m]) => {
             const f = todasFerias[email] || [];
             const sobra = (m.totalDias || 22) - f.filter(d => isDiaUtil(d)).length;
@@ -196,38 +180,37 @@
                 const isFeriado = FERIADOS.includes(dStr);
                 const isFimSemana = (d.getDay() === 0 || d.getDay() === 6);
                 
-                let coresLocal = [];
+                let coresAMostrar = [];
 
-                // Se o filtro de descanso estiver ON, adiciona a cor do FDS ou Feriado
+                // LÓGICA DO UTILIZADOR VIRTUAL (DESCANSO)
                 if (filtrosAtivos["descanso"]) {
-                    if (isFeriado) coresLocal.push("#f85149"); // Vermelho
-                    else if (isFimSemana) coresLocal.push("#e3b341"); // Amarelo
+                    if (isFeriado) coresAMostrar.push("#f85149"); // Vermelho
+                    else if (isFimSemana) coresAMostrar.push("#e3b341"); // Amarelo
                 }
 
-                // Adiciona cores dos utilizadores ativos
+                // LÓGICA DOS UTILIZADORES REAIS
                 Object.keys(todasFerias).forEach(email => {
                     if (filtrosAtivos[email] && todasFerias[email]?.includes(dStr)) {
-                        coresLocal.push(membros[email]?.cor);
+                        coresAMostrar.push(membros[email]?.cor);
                     }
                 });
 
-                if (coresLocal.length > 0) {
-                    cell.classList.add('has-color');
-                    if (coresLocal.length === 1) {
-                        cell.style.background = coresLocal[0];
+                if (coresAMostrar.length > 0) {
+                    cell.style.color = "white"; // Número fica branco se houver fundo
+                    if (coresAMostrar.length === 1) {
+                        cell.style.background = coresAMostrar[0];
                     } else {
                         let grad = "linear-gradient(135deg, ";
-                        let step = 100 / coresLocal.length;
-                        coresLocal.forEach((c, i) => {
-                            grad += `${c} ${i * step}%, ${c} ${(i + 1) * step}%${i < coresLocal.length - 1 ? ", " : ""}`;
+                        let step = 100 / coresAMostrar.length;
+                        coresAMostrar.forEach((c, i) => {
+                            grad += `${c} ${i * step}%, ${c} ${(i + 1) * step}%${i < coresAMostrar.length - 1 ? ", " : ""}`;
                         });
                         grad += ")";
                         cell.style.background = grad;
                     }
                 } else {
-                    // Se não houver cores (ou filtros desligados), aplicar apenas cor de texto para FDS/Feriado
+                    // Sem fundo: volta às cores de texto originais
                     cell.style.background = "";
-                    cell.classList.remove('has-color');
                     if (isFeriado) cell.style.color = "var(--red)";
                     else if (isFimSemana) cell.style.color = "var(--orange)";
                     else cell.style.color = "";
@@ -246,8 +229,15 @@
             }
             while(row.cells.length < 38) row.insertCell();
         });
+        updateStats();
+    }
 
-        // Atualizar stats e períodos
+    function isDiaUtil(dStr) {
+        const d = new Date(dStr + "T00:00:00");
+        return (d.getDay() !== 0 && d.getDay() !== 6 && !FERIADOS.includes(dStr));
+    }
+
+    function updateStats() {
         const total = membros[userEmailEncoded]?.totalDias || 22;
         const gastos = minhasFerias.filter(d => isDiaUtil(d)).length;
         document.getElementById('statTotal').innerText = total;
@@ -296,6 +286,13 @@
             html2canvas: { scale: 2 },
             jsPDF: { orientation: 'landscape', unit: 'mm', format: 'a4' } 
         }).from(element).save();
+    };
+
+    const themeBtn = document.getElementById('themeToggle');
+    themeBtn.onclick = () => {
+        const next = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        document.body.setAttribute('data-theme', next);
+        themeBtn.innerText = next === 'dark' ? '☀️' : '🌙';
     };
 
     onAuthStateChanged(auth, u => u ? checkAccess(u) : signInWithPopup(auth, provider));
