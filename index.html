@@ -9,19 +9,24 @@
         body { font-family: sans-serif; background: var(--bg); color: var(--text); display: flex; margin: 0; height: 100vh; overflow: hidden; }
         .sidebar { width: 300px; background: var(--card); padding: 20px; border-right: 1px solid #30363d; display: flex; flex-direction: column; }
         .main { flex-grow: 1; padding: 25px; overflow-y: auto; }
+        
         button { cursor: pointer; border-radius: 6px; border: none; padding: 12px; width: 100%; font-weight: bold; color: white; margin-bottom: 10px; transition: 0.2s; }
         .btn-google { background: white; color: #444; border: 1px solid #ddd; }
         .btn-save { background: var(--green); }
-        .btn-save:hover { filter: brightness(1.2); }
+        .btn-logout { background: transparent; color: #8b949e; border: 1px solid #30363d; font-size: 12px; margin-top: 10px; }
+        .btn-logout:hover { color: var(--red); border-color: var(--red); }
+        
         table { border-collapse: collapse; width: 100%; background: var(--card); border-radius: 8px; overflow: hidden; }
         th, td { border: 1px solid #30363d; height: 35px; text-align: center; font-size: 11px; }
         .month-name { background: #21262d; text-align: left; padding-left: 12px; font-weight: bold; width: 110px; }
-        .day { cursor: pointer; transition: 0.1s; }
+        .day { cursor: pointer; }
         .weekend { color: var(--orange); background: #2d2400; }
         .holiday { color: var(--red); background: #3d1414; }
+        
         #status { font-size: 12px; text-align: center; margin-bottom: 15px; padding: 8px; border-radius: 4px; }
         .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; font-size: 13px; }
         .color-box { width: 14px; height: 14px; border-radius: 3px; }
+        #userArea { display: flex; flex-direction: column; height: 100%; }
     </style>
 </head>
 <body>
@@ -36,11 +41,12 @@
         <div id="status">Sincronizado</div>
         <hr style="border:0; border-top:1px solid #333; margin: 15px 0;">
         <div id="legend"></div>
-    </div>
-
-    <div style="margin-top: auto; text-align: center;">
-        <div id="count" style="font-size: 48px; font-weight: bold;">0</div>
-        <div style="color: #8b949e; font-size: 12px;">Dias Marcados</div>
+        
+        <div style="margin-top: auto; text-align: center;">
+            <div id="count" style="font-size: 48px; font-weight: bold;">0</div>
+            <div style="color: #8b949e; font-size: 12px; margin-bottom: 20px;">Dias Marcados</div>
+            <button id="btnLogout" class="btn-logout">Sair da Conta</button>
+        </div>
     </div>
 </div>
 
@@ -51,7 +57,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
     import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyA9V2yj_wYiR9o6G-jv-9oxH2Roxb91RPQ",
@@ -84,11 +90,10 @@
             membros = allMembrosSnap.val();
             userEmailEncoded = encoded;
             
-            document.getElementById('userArea').style.display = 'block';
+            document.getElementById('userArea').style.display = 'flex';
             document.getElementById('btnLogin').style.display = 'none';
             document.getElementById('userInfo').innerText = "👤 " + snap.val().nome;
             
-            // Ouvir base de dados em tempo real
             onValue(ref(db, 'equipa'), (snapshot) => {
                 todasFerias = snapshot.val() || {};
                 minhasFerias = todasFerias[userEmailEncoded] || [];
@@ -96,8 +101,8 @@
             });
             renderLegend();
         } else {
-            alert("Acesso negado: " + user.email + " não está na lista de membros.");
-            auth.signOut();
+            alert("Acesso negado: Este e-mail não está autorizado.");
+            signOut(auth);
         }
     }
 
@@ -126,11 +131,9 @@
                 let dStr = d.toISOString().split('T')[0];
                 cell.innerText = d.getDate();
                 cell.className = 'day';
-                
                 if (FERIADOS.includes(dStr)) cell.classList.add('holiday');
                 else if (d.getDay() === 0 || d.getDay() === 6) cell.classList.add('weekend');
 
-                // Aplicar cores de quem marcou
                 Object.entries(todasFerias).forEach(([email, datas]) => {
                     if (datas && datas.includes(dStr)) {
                         cell.style.background = membros[email]?.cor || '#333';
@@ -139,11 +142,8 @@
                 });
 
                 cell.onclick = () => {
-                    if (minhasFerias.includes(dStr)) {
-                        minhasFerias = minhasFerias.filter(v => v !== dStr);
-                    } else {
-                        minhasFerias.push(dStr);
-                    }
+                    if (minhasFerias.includes(dStr)) minhasFerias = minhasFerias.filter(v => v !== dStr);
+                    else minhasFerias.push(dStr);
                     todasFerias[userEmailEncoded] = minhasFerias;
                     document.getElementById('status').innerText = "⚠️ Alterações por guardar";
                     render();
@@ -155,18 +155,28 @@
         document.getElementById('count').innerText = minhasFerias.length;
     }
 
-    onAuthStateChanged(auth, (user) => { if (user) checkAccess(user); });
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            checkAccess(user);
+        } else {
+            document.getElementById('userArea').style.display = 'none';
+            document.getElementById('btnLogin').style.display = 'block';
+            todasFerias = {};
+            minhasFerias = [];
+            render();
+        }
+    });
+
     document.getElementById('btnLogin').onclick = () => signInWithPopup(auth, provider);
+    document.getElementById('btnLogout').onclick = () => signOut(auth);
     
     document.getElementById('btnSave').onclick = async () => {
         document.getElementById('status').innerText = "⏳ A guardar...";
-        try {
-            await set(ref(db, 'equipa/' + userEmailEncoded), minhasFerias);
-            document.getElementById('status').innerText = "✅ Guardado na Nuvem!";
-        } catch (e) {
-            alert("Erro ao guardar: " + e.message);
-        }
+        await set(ref(db, 'equipa/' + userEmailEncoded), minhasFerias);
+        document.getElementById('status').innerText = "✅ Guardado na Nuvem!";
     };
+
+    render();
 </script>
 </body>
 </html>
