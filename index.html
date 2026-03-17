@@ -22,52 +22,53 @@
 
         body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); display: flex; margin: 0; height: 100vh; overflow: hidden; }
         
-        /* Sidebar ajustada */
+        /* Sidebar */
         .sidebar { width: 320px; background: var(--card); padding: 20px; border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow-y: auto; position: relative; }
-        .main { flex-grow: 1; padding: 25px; overflow-y: auto; }
+        .main { flex-grow: 1; padding: 25px; overflow-y: auto; background: var(--bg); }
         
-        /* Botão de tema pequeno */
-        .theme-toggle { position: absolute; top: 10px; right: 10px; background: var(--toggle-bg); border: 1px solid var(--border); width: 32px; height: 32px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+        /* Tema discreto */
+        .theme-toggle { position: absolute; top: 15px; right: 15px; background: var(--toggle-bg); border: 1px solid var(--border); width: 30px; height: 30px; border-radius: 6px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; }
         
         button { cursor: pointer; border-radius: 6px; border: none; padding: 10px; width: 100%; font-weight: bold; margin-bottom: 8px; }
         .btn-save { background: var(--green); color: white; }
         .btn-pdf { background: #8250df; color: white; }
         .btn-google { background: #24292f; color: white; }
 
-        /* Calendário */
+        /* Tabela Formato Largo */
         table { border-collapse: collapse; width: 100%; background: var(--card); font-size: 10px; table-layout: fixed; }
-        th, td { border: 1px solid var(--border); height: 30px; text-align: center; position: relative; }
-        .month-name { background: rgba(128, 128, 128, 0.1); font-weight: bold; text-align: left; padding-left: 5px; }
+        th, td { border: 1px solid var(--border); height: 32px; text-align: center; position: relative; }
+        th { background: rgba(128, 128, 128, 0.05); color: #8b949e; font-weight: normal; }
+        .month-name { background: rgba(128, 128, 128, 0.1) !important; font-weight: bold; text-align: left; padding-left: 8px; width: 80px; }
         
-        /* Estilos de dia */
         .day { cursor: pointer; }
         .weekend { background-color: rgba(154, 103, 0, 0.05); color: var(--orange); }
         .holiday { background-color: rgba(207, 34, 46, 0.05); color: var(--red); font-weight: bold; }
-        .special-mark::after { content: ""; position: absolute; top: 2px; right: 2px; width: 4px; height: 4px; background: white; border-radius: 50%; border: 0.5px solid rgba(0,0,0,0.2); }
+        
+        /* Ponto para indicar fds/feriado em cima da cor */
+        .special-day-mark::after { content: ""; position: absolute; top: 3px; right: 3px; width: 4px; height: 4px; background: white; border-radius: 50%; box-shadow: 0 0 2px rgba(0,0,0,0.5); z-index: 5; }
 
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin: 15px 0; }
-        .stat-box { background: var(--stat-bg); padding: 5px; border-radius: 6px; border: 1px solid var(--border); text-align: center; }
+        .stat-box { background: var(--stat-bg); padding: 8px; border-radius: 6px; border: 1px solid var(--border); text-align: center; }
         .stat-val { display: block; font-size: 16px; font-weight: bold; }
         .stat-lbl { font-size: 8px; color: #8b949e; text-transform: uppercase; }
 
-        /* Lista de Intervalos */
-        .interval-tag { font-size: 10px; padding: 5px; background: var(--toggle-bg); border-radius: 4px; margin-bottom: 4px; display: block; border-left: 3px solid var(--blue); line-height: 1.2; }
+        .interval-item { font-size: 10px; padding: 6px; background: var(--toggle-bg); border-radius: 4px; margin-bottom: 5px; border-left: 3px solid var(--blue); }
     </style>
 </head>
 <body data-theme="light">
 
 <div class="sidebar">
     <button id="themeToggle" class="theme-toggle">🌙</button>
-    <h2 style="margin-top:10px;">🏖️ Férias 2026</h2>
+    <h2 style="margin-top:0">🏖️ Férias 2026</h2>
     <button id="btnLogin" class="btn-google">Entrar com Google</button>
     
     <div id="userArea" style="display:none">
-        <div id="userInfo" style="font-weight:bold; margin-bottom:10px;"></div>
+        <div id="userInfo" style="font-weight:bold; margin-bottom:10px; font-size: 14px;"></div>
         <div class="stats-grid">
             <div class="stat-box"><span id="statTotal" class="stat-val">22</span><span class="stat-lbl">Plafond</span>
-                <div style="display:flex; gap:2px; justify-content:center; margin-top:2px;">
-                    <button style="width:20px; padding:0; height:20px;" id="btnDec">-</button>
-                    <button style="width:20px; padding:0; height:20px;" id="btnInc">+</button>
+                <div style="display:flex; gap:4px; justify-content:center; margin-top:4px;">
+                    <button id="btnDec" style="width:20px; padding:0; height:20px;">-</button>
+                    <button id="btnInc" style="width:20px; padding:0; height:20px;">+</button>
                 </div>
             </div>
             <div class="stat-box"><span id="statUsed" class="stat-val">0</span><span class="stat-lbl">Gastos</span></div>
@@ -75,12 +76,12 @@
         </div>
         <button class="btn-save" id="btnSave">☁️ Guardar</button>
         <button class="btn-pdf" id="btnExport">📄 PDF</button>
-        <div id="status" style="font-size:11px; text-align:center; height:15px; color: var(--green);"></div>
+        <div id="status" style="font-size:11px; text-align:center; height:15px; color: var(--green); margin-bottom:10px;"></div>
         
-        <hr style="border:0; border-top:1px solid var(--border); margin: 15px 0;">
+        <hr style="border:0; border-top:1px solid var(--border); margin: 10px 0;">
         <div id="legend"></div>
         
-        <p style="font-size:10px; font-weight:bold; margin-bottom:5px; color:#8b949e;">OS MEUS PERÍODOS:</p>
+        <p style="font-size:10px; font-weight:bold; color:#8b949e; margin-top:15px; text-transform:uppercase;">Os Meus Períodos:</p>
         <div id="intervalList"></div>
     </div>
 </div>
@@ -104,7 +105,7 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const auth = auth = getAuth(app);
+    const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
 
     let membros = {}; let todasFerias = {}; let userEmailEncoded = ""; let minhasFerias = [];
@@ -116,30 +117,26 @@
         return date.getDay() !== 0 && date.getDay() !== 6 && !FERIADOS.includes(dStr);
     };
 
-    function calcularIntervalos(datas) {
+    function formatIntervals(datas) {
         if (!datas.length) return [];
         const sorted = [...datas].sort();
-        const intervals = [];
+        let intervals = [];
         let start = sorted[0];
         let end = sorted[0];
 
         for (let i = 1; i <= sorted.length; i++) {
-            const current = sorted[i];
             const d1 = new Date(sorted[i-1]);
-            const d2 = current ? new Date(current) : null;
-            
+            const d2 = sorted[i] ? new Date(sorted[i]) : null;
             if (d2 && (d2 - d1) <= 86400000) {
-                end = current;
+                end = sorted[i];
             } else {
                 const f = (s) => {
                     const [y, m, d] = s.split('-');
                     const dt = new Date(y, m-1, d);
-                    const wd = dt.toLocaleDateString('pt', {weekday:'short'}).replace('.','');
-                    return `${wd} ${d}/${m}`;
+                    return `${dt.toLocaleDateString('pt', {weekday:'short'})} ${d}/${m}`;
                 };
                 intervals.push(start === end ? f(start) : `${f(start)} a ${f(end)}`);
-                start = current;
-                end = current;
+                start = sorted[i]; end = sorted[i];
             }
         }
         return intervals;
@@ -158,35 +155,34 @@
 
     function render() {
         const table = document.getElementById('calendar');
-        table.innerHTML = "<tr><th>Mês</th>" + Array.from({length: 31}, (_, i) => `<th>${i+1}</th>`).join('') + "</tr>";
+        table.innerHTML = "<tr><th style='width:80px;'>Mês</th>" + Array.from({length: 37}, (_, i) => `<th>${['S','T','Q','Q','S','S','D'][i % 7]}</th>`).join('') + "</tr>";
         
         // Legenda e Intervalos
-        const leg = document.getElementById('legend');
-        leg.innerHTML = "";
+        const leg = document.getElementById('legend'); leg.innerHTML = "";
         Object.entries(membros).forEach(([email, m]) => {
             const nome = m.nome === "Ines" ? "Inês" : m.nome;
-            const gastos = (todasFerias[email] || []).filter(d => isDiaUtil(d)).length;
-            const sobra = (m.totalDias || 22) - gastos;
-            leg.innerHTML += `<div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:4px;"><span><span style="display:inline-block; width:10px; height:10px; background:${m.cor}; border-radius:2px; margin-right:5px;"></span>${nome}</span><b>${sobra}</b></div>`;
+            const sobra = (m.totalDias || 22) - (todasFerias[email] || []).filter(d => isDiaUtil(d)).length;
+            leg.innerHTML += `<div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:4px;"><span><span style="display:inline-block; width:10px; height:10px; background:${m.cor}; border-radius:2px; margin-right:6px;"></span>${nome}</span><b>${sobra}</b></div>`;
         });
+        document.getElementById('intervalList').innerHTML = formatIntervals(minhasFerias).map(i => `<div class="interval-item">${i}</div>`).join('');
 
-        document.getElementById('intervalList').innerHTML = calcularIntervalos(minhasFerias).map(i => `<span class="interval-tag">${i}</span>`).join('');
-
-        // Render Meses
-        ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"].forEach((nome, mIdx) => {
+        // Calendário
+        const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+        meses.forEach((mNome, mIdx) => {
             let row = table.insertRow();
-            row.insertCell().className = 'month-name'; row.cells[0].innerText = nome;
+            row.insertCell().className = 'month-name'; row.cells[0].innerText = mNome;
             
-            for(let dNum=1; dNum<=31; dNum++) {
-                let cell = row.insertCell();
-                let d = new Date(2026, mIdx, dNum);
-                if (d.getMonth() !== mIdx) continue;
+            let d = new Date(2026, mIdx, 1);
+            let offset = d.getDay() === 0 ? 6 : d.getDay() - 1;
+            for(let i=0; i<offset; i++) row.insertCell();
 
-                let dStr = `2026-${String(mIdx + 1).padStart(2, '0')}-${String(dNum).padStart(2, '0')}`;
-                cell.innerText = dNum; cell.className = 'day';
+            while(d.getMonth() === mIdx) {
+                let cell = row.insertCell();
+                let dStr = `2026-${String(mIdx + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                cell.innerText = d.getDate(); cell.className = 'day';
                 
-                const dw = d.getDay();
                 const isH = FERIADOS.includes(dStr);
+                const dw = d.getDay();
                 const isW = (dw === 0 || dw === 6);
                 if (isH) cell.classList.add('holiday');
                 if (isW) cell.classList.add('weekend');
@@ -194,7 +190,7 @@
                 let users = Object.keys(todasFerias).filter(e => todasFerias[e]?.includes(dStr));
                 if (users.length > 0) {
                     cell.style.color = "white";
-                    if (isH || isW) cell.classList.add('special-mark');
+                    if (isH || isW) cell.classList.add('special-day-mark');
                     
                     if (users.length === 1) cell.style.background = membros[users[0]].cor;
                     else if (users.length === 2) cell.style.background = `linear-gradient(135deg, ${membros[users[0]].cor} 50%, ${membros[users[1]].cor} 50%)`;
@@ -207,10 +203,11 @@
                         if (isDiaUtil(dStr) && minhasFerias.filter(v => isDiaUtil(v)).length >= (membros[userEmailEncoded]?.totalDias || 22)) return;
                         minhasFerias.push(dStr);
                     }
-                    todasFerias[userEmailEncoded] = minhasFerias;
-                    render();
+                    todasFerias[userEmailEncoded] = minhasFerias; render();
                 };
+                d.setDate(d.getDate() + 1);
             }
+            while(row.cells.length < 38) row.insertCell();
         });
 
         const total = membros[userEmailEncoded]?.totalDias || 22;
@@ -218,14 +215,14 @@
         document.getElementById('statTotal').innerText = total;
         document.getElementById('statUsed').innerText = gastos;
         document.getElementById('statLeft').innerText = total - gastos;
-        document.getElementById('userInfo').innerText = "👤 " + (membros[userEmailEncoded]?.nome || "");
+        document.getElementById('userInfo').innerText = "👤 " + (membros[userEmailEncoded]?.nome === "Ines" ? "Inês" : membros[userEmailEncoded]?.nome || "");
     }
 
-    document.getElementById('btnInc').onclick = () => ajustarDias(1);
-    document.getElementById('btnDec').onclick = () => ajustarDias(-1);
-    async function ajustarDias(v) {
+    document.getElementById('btnInc').onclick = () => updatePlafond(1);
+    document.getElementById('btnDec').onclick = () => updatePlafond(-1);
+    async function updatePlafond(v) {
         const n = (membros[userEmailEncoded]?.totalDias || 22) + v;
-        await update(ref(db, `membros/${userEmailEncoded}`), { totalDias: n });
+        if(n >= 0) await update(ref(db, `membros/${userEmailEncoded}`), { totalDias: n });
     }
 
     document.getElementById('btnSave').onclick = async () => {
@@ -242,6 +239,7 @@
 
     onAuthStateChanged(auth, u => u ? checkAccess(u) : null);
     document.getElementById('btnLogin').onclick = () => signInWithPopup(auth, provider);
+    document.getElementById('btnExport').onclick = () => html2pdf().from(document.getElementById('calendar-area')).save('Ferias_2026.pdf');
 </script>
 </body>
 </html>
