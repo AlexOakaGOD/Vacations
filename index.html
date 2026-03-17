@@ -33,7 +33,6 @@
         .btn-pdf { background: #8250df; color: white; }
         .btn-logout { background: transparent; color: #8b949e; border: 1px solid var(--border); font-size: 11px; }
 
-        /* TABELA E CORES */
         table { border-collapse: collapse; width: 100%; background: var(--card); font-size: 10px; color: var(--text); table-layout: fixed; }
         th, td { border: 1px solid var(--border); height: 28px; text-align: center; position: relative; }
         th { background: rgba(128, 128, 128, 0.1); color: #8b949e; }
@@ -41,25 +40,17 @@
         
         .day { cursor: pointer; }
         
-        /* Cores base para FDS e Feriados (apenas se não houver cor de fundo inline) */
-        .weekend:not([style*="background-color"]):not([style*="background:"]) { 
-            background-color: rgba(154, 103, 0, 0.1) !important; 
-            color: var(--orange); 
-        }
-        .holiday:not([style*="background-color"]):not([style*="background:"]) { 
-            background-color: rgba(207, 34, 46, 0.1) !important; 
-            color: var(--red); 
-        }
+        /* Cores base para FDS e Feriados apenas se não estiverem selecionados */
+        .weekend:not([style*="background"]) { background-color: rgba(154, 103, 0, 0.1) !important; color: var(--orange); }
+        .holiday:not([style*="background"]) { background-color: rgba(207, 34, 46, 0.1) !important; color: var(--red); }
 
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin: 15px 0; }
         .stat-box { background: var(--stat-bg); padding: 8px; border-radius: 6px; border: 1px solid var(--border); text-align: center; }
         .stat-val { display: block; font-size: 18px; font-weight: bold; }
         .stat-lbl { font-size: 9px; color: #8b949e; text-transform: uppercase; }
 
-        /* Estilo para PDF */
         .pdf-export { background: white !important; color: black !important; }
         .pdf-export table { background: white !important; border-color: #ccc !important; }
-        .pdf-export td, .pdf-export th { border-color: #ccc !important; color: black !important; }
     </style>
 </head>
 <body data-theme="light">
@@ -76,8 +67,8 @@
                     <span id="statTotal" class="stat-val">22</span>
                     <span class="stat-lbl">Total</span>
                     <div style="display:flex; gap:2px; justify-content:center; margin-top:5px;">
-                        <button style="width:22px; padding:2px; margin:0;" id="btnDec">-</button>
-                        <button style="width:22px; padding:2px; margin:0;" id="btnInc">+</button>
+                        <button style="width:22px; padding:2px; margin:0; font-size:10px;" id="btnDec">-</button>
+                        <button style="width:22px; padding:2px; margin:0; font-size:10px;" id="btnInc">+</button>
                     </div>
                 </div>
                 <div class="stat-box"><span id="statUsed" class="stat-val">0</span><span class="stat-lbl">Úteis</span></div>
@@ -122,9 +113,12 @@
     updateTheme(localStorage.getItem('theme') || 'light');
     document.getElementById('themeToggle').onclick = () => updateTheme(document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
 
+    // Função corrigida para lidar com datas de forma absoluta
     function isDiaUtil(dStr) {
-        const d = new Date(dStr);
-        return d.getDay() !== 0 && d.getDay() !== 6 && !FERIADOS.includes(dStr);
+        const [year, month, day] = dStr.split('-').map(Number);
+        const d = new Date(year, month - 1, day);
+        const dayOfWeek = d.getDay(); 
+        return dayOfWeek !== 0 && dayOfWeek !== 6 && !FERIADOS.includes(dStr);
     }
 
     async function checkAccess(user) {
@@ -163,24 +157,22 @@
             
             while(d.getMonth() === mIdx) {
                 let cell = row.insertCell(); 
-                let dStr = d.toISOString().split('T')[0];
+                let dStr = `2026-${String(mIdx + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
                 cell.innerText = d.getDate(); cell.className = 'day';
                 
                 if (FERIADOS.includes(dStr)) cell.classList.add('holiday');
                 else if (d.getDay() === 0 || d.getDay() === 6) cell.classList.add('weekend');
 
-                // Pintar Células
                 let users = Object.keys(todasFerias).filter(e => todasFerias[e]?.includes(dStr));
-                if (users.length === 1) {
-                    cell.style.backgroundColor = membros[users[0]]?.cor || '';
-                    cell.style.color = 'white'; // Texto branco se selecionado
-                } else if (users.length > 1) {
-                    cell.style.background = `linear-gradient(135deg, ${membros[users[0]].cor} 50%, ${membros[users[1]].cor} 50%)`;
+                if (users.length >= 1) {
+                    if (users.length === 1) {
+                        cell.style.backgroundColor = membros[users[0]].cor;
+                    } else {
+                        cell.style.background = `linear-gradient(135deg, ${membros[users[0]].cor} 50%, ${membros[users[1]].cor} 50%)`;
+                    }
                     cell.style.color = 'white';
                 } else {
-                    cell.style.backgroundColor = "";
-                    cell.style.background = "";
-                    cell.style.color = ""; // Volta à cor do tema
+                    cell.style.background = ""; cell.style.backgroundColor = ""; cell.style.color = "";
                 }
 
                 cell.onclick = () => {
@@ -188,7 +180,7 @@
                         minhasFerias = minhasFerias.filter(v => v !== dStr);
                     } else {
                         if (isDiaUtil(dStr) && uteisGastos >= (membros[userEmailEncoded]?.totalDias || 22)) {
-                            alert("Limite de dias úteis atingido!"); return;
+                            alert("Plafond esgotado!"); return;
                         }
                         minhasFerias.push(dStr);
                     }
@@ -200,9 +192,10 @@
             while(row.cells.length < 38) row.insertCell();
         });
 
-        document.getElementById('statTotal').innerText = membros[userEmailEncoded]?.totalDias || 22;
+        const total = membros[userEmailEncoded]?.totalDias || 22;
+        document.getElementById('statTotal').innerText = total;
         document.getElementById('statUsed').innerText = uteisGastos;
-        document.getElementById('statLeft').innerText = (membros[userEmailEncoded]?.totalDias || 22) - uteisGastos;
+        document.getElementById('statLeft').innerText = total - uteisGastos;
     }
 
     document.getElementById('btnInc').onclick = () => ajustarDias(1);
