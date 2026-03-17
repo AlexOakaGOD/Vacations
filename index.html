@@ -20,112 +20,115 @@
             --orange: #9a6700; --toggle-bg: #eeeeee;
         }
 
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); display: flex; margin: 0; height: 100vh; overflow: hidden; }
+        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); display: flex; margin: 0; height: 100vh; overflow: hidden; }
         
+        /* Sidebar ajustada */
         .sidebar { 
-            width: 300px; min-width: 300px; 
-            background: var(--card); padding: 20px; border-right: 1px solid var(--border); 
+            width: 260px; min-width: 260px; 
+            background: var(--card); padding: 15px; border-right: 1px solid var(--border); 
             display: flex; flex-direction: column; box-sizing: border-box; overflow-y: auto; 
         }
 
-        .sidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .sidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
 
         .main { 
             flex-grow: 1; 
-            padding: 20px; 
+            padding: 10px; 
             overflow: auto; 
             display: flex; 
-            align-items: center; 
+            align-items: flex-start; /* Alinhado ao topo para facilitar leitura */
             justify-content: center; 
         }
 
         .theme-toggle { 
             background: var(--toggle-bg); border: 1px solid var(--border); 
-            width: 35px; height: 35px; border-radius: 50%; cursor: pointer; 
+            width: 30px; height: 30px; border-radius: 50%; cursor: pointer; 
             color: var(--text); display: flex; align-items: center; justify-content: center;
         }
         
-        button { cursor: pointer; border-radius: 6px; border: none; padding: 10px; width: 100%; font-weight: bold; margin-bottom: 8px; transition: opacity 0.2s; }
-        button:hover { opacity: 0.8; }
+        button { cursor: pointer; border-radius: 6px; border: none; padding: 8px; width: 100%; font-weight: bold; margin-bottom: 6px; font-size: 13px; }
         .btn-save { background: var(--green); color: white; }
         .btn-pdf { background: #8250df; color: white; }
-        .btn-logout { background: transparent; color: #8b949e; border: 1px solid var(--border); font-size: 11px; margin-top: auto; }
+        .btn-logout { background: transparent; color: #8b949e; border: 1px solid var(--border); font-size: 10px; margin-top: auto; }
 
-        /* Tabela Corrigida */
+        /* Tabela Otimizada */
         table { 
             border-collapse: collapse; 
             background: var(--card); 
-            font-size: 12px; 
+            font-size: 11px; /* Letra ligeiramente menor para não apertar */
             color: var(--text); 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-            table-layout: fixed; /* Força colunas iguais */
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            table-layout: fixed;
             width: auto;
         }
         
         th, td { 
             border: 1px solid var(--border); 
-            width: 32px; /* Largura fixa para os dias */
-            height: 32px;
+            width: 26px; /* Reduzido de 32px para caber melhor */
+            height: 26px;
             text-align: center; 
             padding: 0;
+            line-height: 26px;
         }
+
+        th { font-size: 9px; color: #8b949e; font-weight: normal; }
 
         .month-name { 
             background: rgba(128, 128, 128, 0.1); 
             text-align: left; 
-            padding-left: 12px; 
+            padding-left: 8px; 
             font-weight: bold; 
-            width: 80px; 
+            width: 60px; 
         }
         
-        .day { cursor: pointer; transition: 0.1s; position: relative; }
-        .day:hover { background: rgba(255, 255, 255, 0.1) !important; }
+        .day { cursor: pointer; transition: 0.1s; }
+        .day:hover { filter: brightness(1.2); }
         .weekend { color: var(--orange) !important; font-weight: bold; background: rgba(255, 255, 255, 0.02); }
         .holiday { color: var(--red) !important; font-weight: bold; }
 
-        /* Stats */
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin: 15px 0; }
-        .stat-box { background: var(--stat-bg); padding: 8px; border-radius: 6px; border: 1px solid var(--border); text-align: center; }
-        .stat-val { display: block; font-size: 18px; font-weight: bold; }
-        .stat-lbl { font-size: 9px; color: #8b949e; text-transform: uppercase; }
+        /* Stats compactos */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; margin-bottom: 12px; }
+        .stat-box { background: var(--stat-bg); padding: 5px; border-radius: 6px; border: 1px solid var(--border); text-align: center; }
+        .stat-val { display: block; font-size: 16px; font-weight: bold; }
+        .stat-lbl { font-size: 8px; color: #8b949e; text-transform: uppercase; }
 
-        .legend-item { display: flex; align-items: center; justify-content: space-between; font-size: 11px; margin-bottom: 5px; }
-        .color-dot { width: 12px; height: 12px; border-radius: 3px; margin-right: 8px; }
-        .sobra-pill { font-weight: bold; background: var(--toggle-bg); padding: 2px 8px; border-radius: 10px; font-size: 10px; }
+        .legend-item { display: flex; align-items: center; justify-content: space-between; font-size: 10px; margin-bottom: 4px; }
+        .color-dot { width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; }
+        .sobra-pill { font-weight: bold; background: var(--toggle-bg); padding: 1px 6px; border-radius: 8px; font-size: 9px; }
 
-        .period-list { margin-top: 15px; }
-        .period-item { font-size: 11px; padding: 8px; background: var(--stat-bg); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 6px; border-left: 4px solid var(--blue); color: var(--text); }
+        .period-list { margin-top: 10px; }
+        .period-item { font-size: 10px; padding: 6px; background: var(--stat-bg); border: 1px solid var(--border); border-radius: 4px; margin-bottom: 4px; border-left: 3px solid var(--blue); }
     </style>
 </head>
 <body data-theme="dark">
 
 <div class="sidebar">
     <div class="sidebar-header">
-        <h2 style="margin:0; font-size: 1.3em;">🏖️ Férias 2026</h2>
+        <h2 style="margin:0; font-size: 1.1em;">🏖️ Férias 2026</h2>
         <button id="themeToggle" class="theme-toggle">☀️</button>
     </div>
     
     <div id="userArea">
-        <div id="userInfo" style="font-weight:bold; margin-bottom:15px; font-size: 18px; color: var(--blue);">A carregar...</div>
+        <div id="userInfo" style="font-weight:bold; margin-bottom:10px; font-size: 16px; color: var(--blue);">A carregar...</div>
         <div class="stats-grid">
             <div class="stat-box">
-                <span id="statTotal" class="stat-val">22</span><span class="stat-lbl">Plafond</span>
-                <div style="display:flex; gap:2px; justify-content:center; margin-top:5px;">
-                    <button id="btnDec" style="width:22px; padding:2px; background: var(--toggle-bg); color: var(--text);">-</button>
-                    <button id="btnInc" style="width:22px; padding:2px; background: var(--toggle-bg); color: var(--text);">+</button>
+                <span id="statTotal" class="stat-val">-</span><span class="stat-lbl">Plafond</span>
+                <div style="display:flex; gap:2px; justify-content:center; margin-top:3px;">
+                    <button id="btnDec" style="width:18px; padding:0; background: var(--toggle-bg); color: var(--text);">-</button>
+                    <button id="btnInc" style="width:18px; padding:0; background: var(--toggle-bg); color: var(--text);">+</button>
                 </div>
             </div>
-            <div class="stat-box"><span id="statUsed" class="stat-val">0</span><span class="stat-lbl">Gastos</span></div>
-            <div class="stat-box"><span id="statLeft" class="stat-val">22</span><span class="stat-lbl">Sobra</span></div>
+            <div class="stat-box"><span id="statUsed" class="stat-val">-</span><span class="stat-lbl">Gastos</span></div>
+            <div class="stat-box"><span id="statLeft" class="stat-val">-</span><span class="stat-lbl">Sobra</span></div>
         </div>
         <button class="btn-save" id="btnSave">Guardar Alterações</button>
         <button class="btn-pdf" id="btnExport">Gerar PDF</button>
-        <div id="status" style="font-size:12px; text-align:center; color: var(--green); margin: 5px 0;"></div>
+        <div id="status" style="font-size:11px; text-align:center; color: var(--green); margin: 4px 0;"></div>
         
-        <div style="font-size:10px; color:#8b949e; margin: 15px 0 8px 0; text-transform: uppercase; font-weight: bold; border-bottom: 1px solid var(--border);">Sobra da Equipa:</div>
+        <div style="font-size:9px; color:#8b949e; margin: 10px 0 5px 0; text-transform: uppercase; font-weight: bold; border-bottom: 1px solid var(--border);">Sobra Equipa:</div>
         <div id="legend"></div>
         
-        <div style="font-size:10px; color:#8b949e; margin: 20px 0 8px 0; text-transform: uppercase; font-weight: bold; border-bottom: 1px solid var(--border);">Os Meus Períodos:</div>
+        <div style="font-size:9px; color:#8b949e; margin: 15px 0 5px 0; text-transform: uppercase; font-weight: bold; border-bottom: 1px solid var(--border);">Meus Períodos:</div>
         <div id="periodList" class="period-list"></div>
     </div>
     <button id="btnLogout" class="btn-logout">Sair</button>
@@ -140,7 +143,6 @@
     import { getDatabase, ref, set, onValue, get, update } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
-    // Configuração do Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyA9V2yj_wYiR9o6G-jv-9oxH2Roxb91RPQ",
         authDomain: "vacations-f36d6.firebaseapp.com",
@@ -154,14 +156,9 @@
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
 
-    let membros = {}; 
-    let todasFerias = {}; 
-    let userEmailEncoded = ""; 
-    let minhasFerias = [];
-
+    let membros = {}; let todasFerias = {}; let userEmailEncoded = ""; let minhasFerias = [];
     const FERIADOS = ["2026-01-01", "2026-04-03", "2026-04-05", "2026-04-25", "2026-05-01", "2026-06-04", "2026-06-10", "2026-08-15", "2026-10-05", "2026-11-01", "2026-12-01", "2026-12-08", "2026-12-25"];
 
-    // Theme Toggle
     const themeBtn = document.getElementById('themeToggle');
     themeBtn.onclick = () => {
         const current = document.body.getAttribute('data-theme');
@@ -176,19 +173,15 @@
     }
 
     function formatarPeriodos(datas) {
-        if (!datas || datas.length === 0) return "Nenhum dia selecionado.";
+        if (!datas || datas.length === 0) return "<div style='font-size:9px; color:#8b949e'>Nada marcado.</div>";
         const sorted = [...datas].sort();
         let periodos = [];
         let start = sorted[0], end = sorted[0];
-        
         for (let i = 1; i <= sorted.length; i++) {
             let current = sorted[i];
-            let dEnd = new Date(end + "T00:00:00");
-            let dCurr = current ? new Date(current + "T00:00:00") : null;
-            
-            if (dCurr && (dCurr - dEnd) / 86400000 === 1) { 
-                end = current; 
-            } else {
+            let dEnd = new Date(end + "T00:00:00"), dCurr = current ? new Date(current + "T00:00:00") : null;
+            if (dCurr && (dCurr - dEnd) / 86400000 === 1) { end = current; } 
+            else {
                 const opt = { weekday: 'short', day: '2-digit', month: '2-digit' };
                 const sF = new Date(start + "T00:00:00").toLocaleDateString('pt-PT', opt);
                 const eF = new Date(end + "T00:00:00").toLocaleDateString('pt-PT', opt);
@@ -206,95 +199,63 @@
             document.getElementById('userInfo').innerText = "👤 " + snap.val().nome;
             onValue(ref(db, 'membros'), s => { membros = s.val() || {}; render(); });
             onValue(ref(db, 'equipa'), s => { todasFerias = s.val() || {}; minhasFerias = todasFerias[userEmailEncoded] || []; render(); });
-        } else { 
-            alert("Acesso negado. Contacte o administrador.");
-            signOut(auth); 
-        }
+        } else { signOut(auth); }
     }
 
     function render() {
         const table = document.getElementById('calendar');
         const diasSemana = ['S','T','Q','Q','S','S','D'];
-        
-        // Cabeçalho
         let header = "<tr><th class='month-name'>Mês</th>";
         for(let i=0; i<37; i++) header += `<th>${diasSemana[i % 7]}</th>`;
         table.innerHTML = header + "</tr>";
         
-        // Legenda Lateral
         const leg = document.getElementById('legend');
         leg.innerHTML = "";
         Object.entries(membros).forEach(([email, m]) => {
             const f = todasFerias[email] || [];
             const sobra = (m.totalDias || 22) - f.filter(d => isDiaUtil(d)).length;
-            leg.innerHTML += `
-                <div class="legend-item">
-                    <div style="display:flex;align-items:center;">
-                        <div class="color-dot" style="background:${m.cor}"></div>
-                        <span>${m.nome}</span>
-                    </div>
-                    <span class="sobra-pill">${sobra}</span>
-                </div>`;
+            leg.innerHTML += `<div class="legend-item"><div><div class="color-dot" style="display:inline-block;background:${m.cor}"></div> ${m.nome}</div><span class="sobra-pill">${sobra}</span></div>`;
         });
 
         document.getElementById('periodList').innerHTML = formatarPeriodos(minhasFerias);
 
-        // Renderização dos Meses
         const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
         meses.forEach((nome, mIdx) => {
             let row = table.insertRow();
-            let cellMes = row.insertCell();
-            cellMes.className = 'month-name';
-            cellMes.innerText = nome;
-
+            row.insertCell().className = 'month-name'; row.cells[0].innerText = nome;
             let d = new Date(2026, mIdx, 1);
-            // Offset: Segunda=0, Domingo=6
             let offset = d.getDay() === 0 ? 6 : d.getDay() - 1;
-
-            // Células vazias iniciais
             for(let i=0; i<offset; i++) row.insertCell();
             
             while(d.getMonth() === mIdx) {
                 let cell = row.insertCell(); 
                 let dStr = `2026-${String(mIdx + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-                cell.innerText = d.getDate(); 
-                cell.className = 'day';
-                
+                cell.innerText = d.getDate(); cell.className = 'day';
                 if (FERIADOS.includes(dStr)) cell.classList.add('holiday');
                 else if (d.getDay() === 0 || d.getDay() === 6) cell.classList.add('weekend');
 
-                // Marcação de Férias da Equipa
                 let usersInDay = Object.keys(todasFerias).filter(e => todasFerias[e]?.includes(dStr));
                 if (usersInDay.length > 0) {
-                    const cores = usersInDay.map(u => membros[u]?.cor || "#333");
-                    if (cores.length === 1) {
-                        cell.style.backgroundColor = cores[0];
-                    } else if (cores.length === 2) {
-                        cell.style.background = `linear-gradient(135deg, ${cores[0]} 50%, ${cores[1]} 50%)`;
-                    } else {
-                        cell.style.background = `linear-gradient(to right, ${cores[0]} 33%, ${cores[1]} 33%, ${cores[1]} 66%, ${cores[2]} 66%)`;
-                    }
+                    const cores = usersInDay.map(u => membros[u]?.cor);
+                    if (cores.length === 1) cell.style.backgroundColor = cores[0];
+                    else if (cores.length === 2) cell.style.background = `linear-gradient(135deg, ${cores[0]} 50%, ${cores[1]} 50%)`;
+                    else cell.style.background = `linear-gradient(to right, ${cores[0]} 33%, ${cores[1]} 33%, ${cores[1]} 66%, ${cores[2]} 66%)`;
                     cell.style.color = 'white';
                 }
-
                 cell.onclick = () => {
-                    if (minhasFerias.includes(dStr)) {
-                        minhasFerias = minhasFerias.filter(v => v !== dStr);
-                    } else {
-                        const plafond = membros[userEmailEncoded]?.totalDias || 22;
-                        if (isDiaUtil(dStr) && minhasFerias.filter(v => isDiaUtil(v)).length >= plafond) return;
+                    if (minhasFerias.includes(dStr)) { minhasFerias = minhasFerias.filter(v => v !== dStr); } 
+                    else {
+                        const max = membros[userEmailEncoded]?.totalDias || 22;
+                        if (isDiaUtil(dStr) && minhasFerias.filter(v => isDiaUtil(v)).length >= max) return;
                         minhasFerias.push(dStr);
                     }
-                    todasFerias[userEmailEncoded] = minhasFerias;
-                    render();
+                    todasFerias[userEmailEncoded] = minhasFerias; render();
                 };
                 d.setDate(d.getDate() + 1);
             }
-            // Preencher até ao fim para manter grelha intacta
             while(row.cells.length < 38) row.insertCell();
         });
 
-        // Atualizar Stats no Painel
         const total = membros[userEmailEncoded]?.totalDias || 22;
         const gastos = minhasFerias.filter(d => isDiaUtil(d)).length;
         document.getElementById('statTotal').innerText = total;
@@ -302,7 +263,6 @@
         document.getElementById('statLeft').innerText = total - gastos;
     }
 
-    // Botões de Plafond
     document.getElementById('btnInc').onclick = () => ajustarDias(1);
     document.getElementById('btnDec').onclick = () => ajustarDias(-1);
     async function ajustarDias(v) {
@@ -310,38 +270,19 @@
         if(n >= 0) await update(ref(db, `membros/${userEmailEncoded}`), { totalDias: n });
     }
 
-    // Guardar no Firebase
     document.getElementById('btnSave').onclick = async () => {
         await set(ref(db, 'equipa/' + userEmailEncoded), minhasFerias);
-        const status = document.getElementById('status');
-        status.innerText = "✅ Alterações guardadas!";
-        setTimeout(() => status.innerText = "", 3000);
+        document.getElementById('status').innerText = "✅ Guardado!";
+        setTimeout(() => document.getElementById('status').innerText = "", 3000);
     };
 
-    // Exportar PDF
     document.getElementById('btnExport').onclick = () => {
         const element = document.getElementById('calendar-area');
-        const opt = {
-            margin: 10,
-            filename: `Ferias_2026_${membros[userEmailEncoded]?.nome || 'Equipa'}.pdf`,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true, backgroundColor: getComputedStyle(document.body).getPropertyValue('--bg') },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
-        };
-        html2pdf().set(opt).from(element).save();
+        html2pdf().set({ margin: 5, filename: 'Ferias_2026.pdf', jsPDF: { orientation: 'landscape' } }).from(element).save();
     };
 
-    // Auth Logic
-    onAuthStateChanged(auth, u => {
-        if (u) {
-            checkAccess(u);
-        } else {
-            signInWithPopup(auth, provider).catch(err => console.error("Erro login:", err));
-        }
-    });
-
+    onAuthStateChanged(auth, u => u ? checkAccess(u) : signInWithPopup(auth, provider));
     document.getElementById('btnLogout').onclick = () => signOut(auth).then(() => location.reload());
-
 </script>
 </body>
 </html>
