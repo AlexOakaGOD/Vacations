@@ -22,6 +22,7 @@
 
         body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); display: flex; margin: 0; height: 100vh; overflow: hidden; }
         
+        /* Sidebar */
         .sidebar { 
             width: 300px; min-width: 300px; 
             background: var(--card); padding: 20px; border-right: 1px solid var(--border); 
@@ -30,12 +31,14 @@
 
         .sidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 
-        /* ÁREA PRINCIPAL: Agora sem restrições de largura */
+        /* Área do Calendário - Centrada */
         .main { 
             flex-grow: 1; 
-            padding: 15px; 
+            padding: 20px; 
             overflow: auto; 
-            display: block; 
+            display: flex; /* Flex para centrar */
+            align-items: center; /* Centra verticalmente */
+            justify-content: center; /* Centra horizontalmente */
         }
 
         .theme-toggle { 
@@ -49,26 +52,26 @@
         .btn-pdf { background: #8250df; color: white; }
         .btn-logout { background: transparent; color: #8b949e; border: 1px solid var(--border); font-size: 11px; margin-top: auto; }
 
-        /* CALENDÁRIO GIGANTE */
+        /* Tabela Ajustada para ser o Centro das Atenções */
         table { 
             border-collapse: collapse; 
-            width: 99%; /* Ocupa quase a largura toda da área main */
-            height: 90vh; /* Ocupa quase a altura toda */
+            width: 95%; /* Ligeira margem para não bater nas bordas */
+            max-width: 1400px; /* Limite para não esticar demais em ecrãs UltraWide */
             background: var(--card); 
-            font-size: 13px; /* Aumentado para melhor leitura */
+            font-size: 13px; 
             color: var(--text); 
-            margin: 0 auto;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         }
         
-        th, td { border: 1px solid var(--border); text-align: center; }
-        .month-name { background: rgba(128, 128, 128, 0.15); text-align: left; padding-left: 10px; font-weight: bold; width: 80px; }
+        th, td { border: 1px solid var(--border); padding: 12px 0; text-align: center; }
+        .month-name { background: rgba(128, 128, 128, 0.15); text-align: left; padding-left: 12px; font-weight: bold; width: 85px; }
         
-        .day { cursor: pointer; transition: 0.1s; height: 100%; }
-        .day:hover { filter: brightness(1.2); outline: 1px solid var(--blue); }
+        .day { cursor: pointer; transition: 0.1s; }
+        .day:hover { background: rgba(255, 255, 255, 0.05); }
         .weekend { color: var(--orange) !important; font-weight: bold; background: rgba(255, 255, 255, 0.02); }
         .holiday { color: var(--red) !important; font-weight: bold; }
 
-        /* Stats e Legendas */
+        /* Stats e Design Lateral */
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin: 15px 0; }
         .stat-box { background: var(--stat-bg); padding: 8px; border-radius: 6px; border: 1px solid var(--border); text-align: center; }
         .stat-val { display: block; font-size: 18px; font-weight: bold; }
@@ -113,7 +116,7 @@
         <div style="font-size:10px; color:#8b949e; margin: 20px 0 8px 0; text-transform: uppercase; font-weight: bold; border-bottom: 1px solid var(--border);">Os Meus Períodos:</div>
         <div id="periodList" class="period-list"></div>
     </div>
-    <button id="btnLogout" class="btn-logout" style="margin-top: 20px;">Sair</button>
+    <button id="btnLogout" class="btn-logout" style="margin-top: auto;">Sair</button>
 </div>
 
 <div class="main" id="calendar-area">
@@ -121,6 +124,7 @@
 </div>
 
 <script type="module">
+    // ... (Mantém-se o script do Firebase e lógica de renderização anterior)
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
     import { getDatabase, ref, set, onValue, get, update } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
@@ -231,7 +235,6 @@
                 };
                 d.setDate(d.getDate() + 1);
             }
-            // Preencher o resto da linha se necessário
             while(row.cells.length < 38) row.insertCell();
         });
         document.getElementById('statTotal').innerText = membros[userEmailEncoded]?.totalDias || 22;
