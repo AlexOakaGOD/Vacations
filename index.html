@@ -22,7 +22,7 @@
 
         body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); display: flex; margin: 0; height: 100vh; overflow: hidden; }
         
-        .sidebar { width: 260px; min-width: 260px; background: var(--card); padding: 15px; border-right: 1px solid var(--border); display: flex; flex-direction: column; box-sizing: border-box; overflow-y: auto; z-index: 10; }
+        .sidebar { width: 260px; min-width: 260px; background: var(--card); padding: 15px; border-right: 1px solid var(--border); display: flex; flex-direction: column; box-sizing: border-box; overflow-y: auto; }
         .sidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
 
         .main { 
@@ -35,16 +35,16 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.4); table-layout: fixed; width: 1050px; 
         }
         
-        th, td { border: 1px solid var(--border); width: 26px; height: 28px; text-align: center; padding: 0; box-sizing: border-box; }
+        th, td { border: 1px solid var(--border); width: 26px; height: 28px; text-align: center; padding: 0; box-sizing: border-box; position: relative; }
         .month-name { background: rgba(128, 128, 128, 0.15); text-align: left; padding-left: 8px; font-weight: bold; width: 60px; }
         
-        .day { cursor: pointer; transition: 0.1s; }
+        .day { cursor: pointer; transition: 0.1s; z-index: 1; }
         .day:hover { filter: brightness(1.2); }
 
-        .weekend-text { color: var(--orange) !important; font-weight: bold; }
-        .holiday-text { color: var(--red) !important; font-weight: bold; }
+        /* Estilo para os números quando há fundo colorido */
+        .has-color { color: white !important; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
 
-        /* LEGENDA CLICÁVEL */
+        /* LEGENDA */
         .legend-item { 
             display: flex; align-items: center; justify-content: space-between; 
             font-size: 11px; margin-bottom: 6px; cursor: pointer; 
@@ -52,7 +52,7 @@
             background: rgba(255,255,255,0.03);
         }
         .legend-item:hover { background: rgba(255,255,255,0.08); }
-        .legend-item.hidden { opacity: 0.35; filter: grayscale(0.8); }
+        .legend-item.hidden { opacity: 0.3; filter: grayscale(1); }
 
         .theme-toggle, .btn-logout-top { background: var(--toggle-bg); border: 1px solid var(--border); width: 32px; height: 32px; border-radius: 50%; cursor: pointer; color: var(--text); display: flex; align-items: center; justify-content: center; }
         button { cursor: pointer; border-radius: 6px; border: none; padding: 8px; width: 100%; font-weight: bold; margin-bottom: 6px; font-size: 13px; }
@@ -92,8 +92,10 @@
         <button class="btn-save" id="btnSave">Guardar Alterações</button>
         <button class="btn-pdf" id="btnExport">Gerar PDF</button>
         <div id="status" style="font-size:11px; text-align:center; color: var(--green); margin: 4px 0;"></div>
-        <div style="font-size:9px; color:#8b949e; margin: 10px 0 5px 0; text-transform: uppercase; font-weight: bold;">Filtros Equipa:</div>
+        
+        <div style="font-size:9px; color:#8b949e; margin: 10px 0 5px 0; text-transform: uppercase; font-weight: bold;">Filtros Visuais:</div>
         <div id="legend"></div>
+        
         <div style="font-size:9px; color:#8b949e; margin: 15px 0 5px 0; text-transform: uppercase; font-weight: bold;">Meus Períodos:</div>
         <div id="periodList"></div>
     </div>
@@ -122,7 +124,7 @@
     const provider = new GoogleAuthProvider();
 
     let membros = {}; let todasFerias = {}; let userEmailEncoded = ""; let minhasFerias = [];
-    let filtrosAtivos = {}; 
+    let filtrosAtivos = { "descanso": true }; // O filtro de descanso começa ativo
 
     const FERIADOS = ["2026-01-01", "2026-04-03", "2026-04-05", "2026-04-25", "2026-05-01", "2026-06-04", "2026-06-10", "2026-08-15", "2026-10-05", "2026-11-01", "2026-12-01", "2026-12-08", "2026-12-25"];
 
@@ -137,26 +139,6 @@
     function isDiaUtil(dStr) {
         const d = new Date(dStr + "T00:00:00");
         return (d.getDay() !== 0 && d.getDay() !== 6 && !FERIADOS.includes(dStr));
-    }
-
-    function formatarPeriodos(datas) {
-        if (!datas || datas.length === 0) return "<div style='font-size:9px; color:#8b949e'>Sem marcações.</div>";
-        const sorted = [...datas].sort();
-        let periodos = [];
-        let start = sorted[0], end = sorted[0];
-        for (let i = 1; i <= sorted.length; i++) {
-            let current = sorted[i];
-            let dEnd = new Date(end + "T00:00:00"), dCurr = current ? new Date(current + "T00:00:00") : null;
-            if (dCurr && (dCurr - dEnd) / 86400000 === 1) { end = current; } 
-            else {
-                const opt = { weekday: 'long', day: '2-digit', month: '2-digit' };
-                const sF = new Date(start + "T00:00:00").toLocaleDateString('pt-PT', opt);
-                const eF = new Date(end + "T00:00:00").toLocaleDateString('pt-PT', opt);
-                periodos.push(start === end ? sF : `${sF} a ${eF}`);
-                start = current; end = current;
-            }
-        }
-        return periodos.map(p => `<div class="period-item">${p}</div>`).join('');
     }
 
     async function checkAccess(user) {
@@ -179,6 +161,15 @@
         
         const leg = document.getElementById('legend');
         leg.innerHTML = "";
+
+        // Adiciona Filtro de Descanso (FDS/Feriado)
+        const itemDescanso = document.createElement('div');
+        itemDescanso.className = `legend-item ${!filtrosAtivos["descanso"] ? 'hidden' : ''}`;
+        itemDescanso.innerHTML = `<div><div class="color-dot" style="display:inline-block;background:linear-gradient(to right, var(--orange), var(--red))"></div> Descanso (FDS/Feriado)</div>`;
+        itemDescanso.onclick = () => { filtrosAtivos["descanso"] = !filtrosAtivos["descanso"]; render(); };
+        leg.appendChild(itemDescanso);
+
+        // Adiciona Membros
         Object.entries(membros).forEach(([email, m]) => {
             const f = todasFerias[email] || [];
             const sobra = (m.totalDias || 22) - f.filter(d => isDiaUtil(d)).length;
@@ -189,9 +180,8 @@
             leg.appendChild(item);
         });
 
-        document.getElementById('periodList').innerHTML = formatarPeriodos(minhasFerias);
-
-        ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"].forEach((nome, mIdx) => {
+        const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+        meses.forEach((nome, mIdx) => {
             let row = table.insertRow();
             row.insertCell().className = 'month-name'; row.cells[0].innerText = nome;
             let d = new Date(2026, mIdx, 1);
@@ -203,30 +193,44 @@
                 let dStr = `2026-${String(mIdx + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
                 cell.innerText = d.getDate(); cell.className = 'day';
                 
-                if (FERIADOS.includes(dStr)) cell.classList.add('holiday-text');
-                else if (d.getDay() === 0 || d.getDay() === 6) cell.classList.add('weekend-text');
+                const isFeriado = FERIADOS.includes(dStr);
+                const isFimSemana = (d.getDay() === 0 || d.getDay() === 6);
+                
+                let coresLocal = [];
 
-                // CORES DOS UTILIZADORES (APENAS SE ATIVOS NO FILTRO)
-                let cores = Object.keys(todasFerias)
-                    .filter(email => filtrosAtivos[email] && todasFerias[email]?.includes(dStr))
-                    .map(email => membros[email]?.cor);
+                // Se o filtro de descanso estiver ON, adiciona a cor do FDS ou Feriado
+                if (filtrosAtivos["descanso"]) {
+                    if (isFeriado) coresLocal.push("#f85149"); // Vermelho
+                    else if (isFimSemana) coresLocal.push("#e3b341"); // Amarelo
+                }
 
-                if (cores.length > 0) {
-                    if (cores.length === 1) {
-                        cell.style.background = cores[0];
+                // Adiciona cores dos utilizadores ativos
+                Object.keys(todasFerias).forEach(email => {
+                    if (filtrosAtivos[email] && todasFerias[email]?.includes(dStr)) {
+                        coresLocal.push(membros[email]?.cor);
+                    }
+                });
+
+                if (coresLocal.length > 0) {
+                    cell.classList.add('has-color');
+                    if (coresLocal.length === 1) {
+                        cell.style.background = coresLocal[0];
                     } else {
                         let grad = "linear-gradient(135deg, ";
-                        let step = 100 / cores.length;
-                        cores.forEach((c, i) => {
-                            grad += `${c} ${i * step}%, ${c} ${(i + 1) * step}%${i < cores.length - 1 ? ", " : ""}`;
+                        let step = 100 / coresLocal.length;
+                        coresLocal.forEach((c, i) => {
+                            grad += `${c} ${i * step}%, ${c} ${(i + 1) * step}%${i < coresLocal.length - 1 ? ", " : ""}`;
                         });
                         grad += ")";
                         cell.style.background = grad;
                     }
-                    cell.style.color = 'white';
                 } else {
+                    // Se não houver cores (ou filtros desligados), aplicar apenas cor de texto para FDS/Feriado
                     cell.style.background = "";
-                    cell.style.color = "";
+                    cell.classList.remove('has-color');
+                    if (isFeriado) cell.style.color = "var(--red)";
+                    else if (isFimSemana) cell.style.color = "var(--orange)";
+                    else cell.style.color = "";
                 }
 
                 cell.onclick = () => {
@@ -243,11 +247,33 @@
             while(row.cells.length < 38) row.insertCell();
         });
 
+        // Atualizar stats e períodos
         const total = membros[userEmailEncoded]?.totalDias || 22;
         const gastos = minhasFerias.filter(d => isDiaUtil(d)).length;
         document.getElementById('statTotal').innerText = total;
         document.getElementById('statUsed').innerText = gastos;
         document.getElementById('statLeft').innerText = total - gastos;
+        document.getElementById('periodList').innerHTML = formatarPeriodos(minhasFerias);
+    }
+
+    function formatarPeriodos(datas) {
+        if (!datas || datas.length === 0) return "<div style='font-size:9px; color:#8b949e'>Sem marcações.</div>";
+        const sorted = [...datas].sort();
+        let periodos = [];
+        let start = sorted[0], end = sorted[0];
+        for (let i = 1; i <= sorted.length; i++) {
+            let current = sorted[i];
+            let dEnd = new Date(end + "T00:00:00"), dCurr = current ? new Date(current + "T00:00:00") : null;
+            if (dCurr && (dCurr - dEnd) / 86400000 === 1) { end = current; } 
+            else {
+                const opt = { weekday: 'long', day: '2-digit', month: '2-digit' };
+                const sF = new Date(start + "T00:00:00").toLocaleDateString('pt-PT', opt);
+                const eF = new Date(end + "T00:00:00").toLocaleDateString('pt-PT', opt);
+                periodos.push(start === end ? sF : `${sF} a ${eF}`);
+                start = current; end = current;
+            }
+        }
+        return periodos.map(p => `<div class="period-item">${p}</div>`).join('');
     }
 
     document.getElementById('btnInc').onclick = () => ajustarDias(1);
