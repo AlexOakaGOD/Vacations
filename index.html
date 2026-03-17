@@ -22,7 +22,7 @@
 
         body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); display: flex; margin: 0; height: 100vh; overflow: hidden; }
         
-        .sidebar { width: 260px; min-width: 260px; background: var(--card); padding: 15px; border-right: 1px solid var(--border); display: flex; flex-direction: column; box-sizing: border-box; overflow-y: auto; }
+        .sidebar { width: 260px; min-width: 260px; background: var(--card); padding: 15px; border-right: 1px solid var(--border); display: flex; flex-direction: column; box-sizing: border-box; overflow-y: auto; z-index: 10; }
         .sidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
 
         .main { 
@@ -32,32 +32,29 @@
 
         table { 
             border-collapse: collapse; background: var(--card); font-size: 11px; color: var(--text); 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.4); table-layout: fixed; 
-            width: 1050px; min-width: 1050px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4); table-layout: fixed; width: 1050px; 
         }
         
-        th, td { 
-            border: 1px solid var(--border); width: 26px; min-width: 26px; max-width: 26px; 
-            height: 28px; text-align: center; padding: 0; line-height: 28px; box-sizing: border-box; 
-        }
-
-        .month-name { background: rgba(128, 128, 128, 0.15); text-align: left; padding-left: 8px; font-weight: bold; width: 60px; min-width: 60px; }
+        th, td { border: 1px solid var(--border); width: 26px; height: 28px; text-align: center; padding: 0; box-sizing: border-box; }
+        .month-name { background: rgba(128, 128, 128, 0.15); text-align: left; padding-left: 8px; font-weight: bold; width: 60px; }
+        
         .day { cursor: pointer; transition: 0.1s; }
-        .day:hover { filter: brightness(1.3); }
+        .day:hover { filter: brightness(1.2); }
 
         .weekend-text { color: var(--orange) !important; font-weight: bold; }
         .holiday-text { color: var(--red) !important; font-weight: bold; }
 
-        /* Estilo da Legenda Clicável */
+        /* LEGENDA CLICÁVEL */
         .legend-item { 
             display: flex; align-items: center; justify-content: space-between; 
             font-size: 11px; margin-bottom: 6px; cursor: pointer; 
-            transition: opacity 0.2s; padding: 4px; border-radius: 4px;
+            padding: 6px; border-radius: 6px; transition: 0.2s;
+            background: rgba(255,255,255,0.03);
         }
-        .legend-item:hover { background: rgba(255,255,255,0.05); }
-        .legend-item.hidden { opacity: 0.3; text-decoration: line-through; }
+        .legend-item:hover { background: rgba(255,255,255,0.08); }
+        .legend-item.hidden { opacity: 0.35; filter: grayscale(0.8); }
 
-        .theme-toggle, .btn-logout-top { background: var(--toggle-bg); border: 1px solid var(--border); width: 32px; height: 32px; border-radius: 50%; cursor: pointer; color: var(--text); display: flex; align-items: center; justify-content: center; font-size: 16px; }
+        .theme-toggle, .btn-logout-top { background: var(--toggle-bg); border: 1px solid var(--border); width: 32px; height: 32px; border-radius: 50%; cursor: pointer; color: var(--text); display: flex; align-items: center; justify-content: center; }
         button { cursor: pointer; border-radius: 6px; border: none; padding: 8px; width: 100%; font-weight: bold; margin-bottom: 6px; font-size: 13px; }
         .btn-save { background: var(--green); color: white; }
         .btn-pdf { background: #8250df; color: white; }
@@ -65,8 +62,8 @@
         .stat-box { background: var(--stat-bg); padding: 5px; border-radius: 6px; border: 1px solid var(--border); text-align: center; }
         .stat-val { display: block; font-size: 16px; font-weight: bold; }
         .stat-lbl { font-size: 8px; color: #8b949e; text-transform: uppercase; }
-        .color-dot { width: 12px; height: 12px; border-radius: 3px; margin-right: 8px; border: 1px solid rgba(255,255,255,0.1); }
-        .sobra-pill { font-weight: bold; background: var(--toggle-bg); padding: 1px 6px; border-radius: 8px; font-size: 9px; }
+        .color-dot { width: 12px; height: 12px; border-radius: 3px; margin-right: 8px; }
+        .sobra-pill { font-weight: bold; background: var(--toggle-bg); padding: 1px 6px; border-radius: 8px; font-size: 10px; }
         .period-item { font-size: 10px; padding: 6px; background: var(--stat-bg); border: 1px solid var(--border); border-radius: 4px; margin-bottom: 4px; border-left: 3px solid var(--blue); }
     </style>
 </head>
@@ -95,9 +92,9 @@
         <button class="btn-save" id="btnSave">Guardar Alterações</button>
         <button class="btn-pdf" id="btnExport">Gerar PDF</button>
         <div id="status" style="font-size:11px; text-align:center; color: var(--green); margin: 4px 0;"></div>
-        <div style="font-size:9px; color:#8b949e; margin: 10px 0 5px 0; text-transform: uppercase; font-weight: bold; border-bottom: 1px solid var(--border);">Filtros Equipa (clique):</div>
+        <div style="font-size:9px; color:#8b949e; margin: 10px 0 5px 0; text-transform: uppercase; font-weight: bold;">Filtros Equipa:</div>
         <div id="legend"></div>
-        <div style="font-size:9px; color:#8b949e; margin: 15px 0 5px 0; text-transform: uppercase; font-weight: bold; border-bottom: 1px solid var(--border);">Meus Períodos:</div>
+        <div style="font-size:9px; color:#8b949e; margin: 15px 0 5px 0; text-transform: uppercase; font-weight: bold;">Meus Períodos:</div>
         <div id="periodList"></div>
     </div>
 </div>
@@ -125,7 +122,7 @@
     const provider = new GoogleAuthProvider();
 
     let membros = {}; let todasFerias = {}; let userEmailEncoded = ""; let minhasFerias = [];
-    let membrosVisiveis = {}; // Estado local para os filtros
+    let filtrosAtivos = {}; 
 
     const FERIADOS = ["2026-01-01", "2026-04-03", "2026-04-05", "2026-04-25", "2026-05-01", "2026-06-04", "2026-06-10", "2026-08-15", "2026-10-05", "2026-11-01", "2026-12-01", "2026-12-08", "2026-12-25"];
 
@@ -143,7 +140,7 @@
     }
 
     function formatarPeriodos(datas) {
-        if (!datas || datas.length === 0) return "<div style='font-size:9px; color:#8b949e'>Nada marcado.</div>";
+        if (!datas || datas.length === 0) return "<div style='font-size:9px; color:#8b949e'>Sem marcações.</div>";
         const sorted = [...datas].sort();
         let periodos = [];
         let start = sorted[0], end = sorted[0];
@@ -152,7 +149,7 @@
             let dEnd = new Date(end + "T00:00:00"), dCurr = current ? new Date(current + "T00:00:00") : null;
             if (dCurr && (dCurr - dEnd) / 86400000 === 1) { end = current; } 
             else {
-                const opt = { weekday: 'short', day: '2-digit', month: '2-digit' };
+                const opt = { weekday: 'long', day: '2-digit', month: '2-digit' };
                 const sF = new Date(start + "T00:00:00").toLocaleDateString('pt-PT', opt);
                 const eF = new Date(end + "T00:00:00").toLocaleDateString('pt-PT', opt);
                 periodos.push(start === end ? sF : `${sF} a ${eF}`);
@@ -169,46 +166,32 @@
             document.getElementById('userInfo').innerText = "👤 " + snap.val().nome;
             onValue(ref(db, 'membros'), s => { 
                 membros = s.val() || {}; 
-                // Inicializa visibilidade se for a primeira vez
-                Object.keys(membros).forEach(email => {
-                    if (membrosVisiveis[email] === undefined) membrosVisiveis[email] = true;
-                });
+                Object.keys(membros).forEach(k => { if(filtrosAtivos[k] === undefined) filtrosAtivos[k] = true; });
                 render(); 
             });
             onValue(ref(db, 'equipa'), s => { todasFerias = s.val() || {}; minhasFerias = todasFerias[userEmailEncoded] || []; render(); });
         } else { signOut(auth); }
     }
 
-    function toggleFiltro(email) {
-        membrosVisiveis[email] = !membrosVisiveis[email];
-        render();
-    }
-
     function render() {
         const table = document.getElementById('calendar');
-        const diasSemana = ['S','T','Q','Q','S','S','D'];
-        let header = "<tr><th class='month-name'>Mês</th>";
-        for(let i=0; i<37; i++) header += `<th>${diasSemana[i % 7]}</th>`;
-        table.innerHTML = header + "</tr>";
+        table.innerHTML = "<tr><th class='month-name'>Mês</th>" + Array.from({length: 37}, (_, i) => `<th>${['S','T','Q','Q','S','S','D'][i % 7]}</th>`).join('') + "</tr>";
         
         const leg = document.getElementById('legend');
         leg.innerHTML = "";
         Object.entries(membros).forEach(([email, m]) => {
             const f = todasFerias[email] || [];
             const sobra = (m.totalDias || 22) - f.filter(d => isDiaUtil(d)).length;
-            const isHidden = !membrosVisiveis[email];
-            
             const item = document.createElement('div');
-            item.className = `legend-item ${isHidden ? 'hidden' : ''}`;
+            item.className = `legend-item ${!filtrosAtivos[email] ? 'hidden' : ''}`;
             item.innerHTML = `<div><div class="color-dot" style="display:inline-block;background:${m.cor}"></div> ${m.nome}</div><span class="sobra-pill">${sobra}</span>`;
-            item.onclick = () => toggleFiltro(email);
+            item.onclick = () => { filtrosAtivos[email] = !filtrosAtivos[email]; render(); };
             leg.appendChild(item);
         });
 
         document.getElementById('periodList').innerHTML = formatarPeriodos(minhasFerias);
 
-        const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-        meses.forEach((nome, mIdx) => {
+        ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"].forEach((nome, mIdx) => {
             let row = table.insertRow();
             row.insertCell().className = 'month-name'; row.cells[0].innerText = nome;
             let d = new Date(2026, mIdx, 1);
@@ -220,28 +203,22 @@
                 let dStr = `2026-${String(mIdx + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
                 cell.innerText = d.getDate(); cell.className = 'day';
                 
-                const isFeriado = FERIADOS.includes(dStr);
-                const isFimSemana = (d.getDay() === 0 || d.getDay() === 6);
-                
-                if (isFeriado) cell.classList.add('holiday-text');
-                else if (isFimSemana) cell.classList.add('weekend-text');
+                if (FERIADOS.includes(dStr)) cell.classList.add('holiday-text');
+                else if (d.getDay() === 0 || d.getDay() === 6) cell.classList.add('weekend-text');
 
-                // Lógica de Cores FILTRADA
-                let coresAMostrar = [];
-                Object.keys(todasFerias).forEach(email => {
-                    if (membrosVisiveis[email] && todasFerias[email]?.includes(dStr)) {
-                        if (membros[email]?.cor) coresAMostrar.push(membros[email].cor);
-                    }
-                });
+                // CORES DOS UTILIZADORES (APENAS SE ATIVOS NO FILTRO)
+                let cores = Object.keys(todasFerias)
+                    .filter(email => filtrosAtivos[email] && todasFerias[email]?.includes(dStr))
+                    .map(email => membros[email]?.cor);
 
-                if (coresAMostrar.length > 0) {
-                    if (coresAMostrar.length === 1) {
-                        cell.style.background = coresAMostrar[0];
+                if (cores.length > 0) {
+                    if (cores.length === 1) {
+                        cell.style.background = cores[0];
                     } else {
                         let grad = "linear-gradient(135deg, ";
-                        let step = 100 / coresAMostrar.length;
-                        coresAMostrar.forEach((cor, i) => {
-                            grad += `${cor} ${i * step}%, ${cor} ${(i + 1) * step}%${i < coresAMostrar.length - 1 ? ", " : ""}`;
+                        let step = 100 / cores.length;
+                        cores.forEach((c, i) => {
+                            grad += `${c} ${i * step}%, ${c} ${(i + 1) * step}%${i < cores.length - 1 ? ", " : ""}`;
                         });
                         grad += ")";
                         cell.style.background = grad;
@@ -249,7 +226,7 @@
                     cell.style.color = 'white';
                 } else {
                     cell.style.background = "";
-                    cell.style.color = ""; // Volta à cor original (laranja/vermelho/text)
+                    cell.style.color = "";
                 }
 
                 cell.onclick = () => {
