@@ -6,34 +6,60 @@
     <title>Férias Equipa 2026</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
+        /* Variáveis para Modo Claro (Padrão) */
         :root { 
-            --bg: #0d1117; --card: #161b22; --text: #c9d1d9; 
-            --blue: #1f6feb; --green: #238636; --red: #f85149; 
-            --orange: #e3b341; --border: #30363d;
+            --bg: #ffffff; --card: #f6f8fa; --text: #24292f; 
+            --border: #d0d7de; --stat-bg: #ffffff;
+            --blue: #0969da; --green: #1a7f37; --red: #cf222e; 
+            --orange: #9a6700;
         }
-        body { font-family: sans-serif; background: var(--bg); color: var(--text); display: flex; margin: 0; height: 100vh; overflow: hidden; }
+
+        /* Variáveis para Modo Escuro (Automático) */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0d1117; --card: #161b22; --text: #c9d1d9; 
+                --border: #30363d; --stat-bg: #0d1117;
+                --blue: #1f6feb; --green: #238636; --red: #f85149; 
+                --orange: #e3b341;
+            }
+        }
+
+        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); display: flex; margin: 0; height: 100vh; overflow: hidden; transition: 0.3s; }
         .sidebar { width: 300px; background: var(--card); padding: 20px; border-right: 1px solid var(--border); display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box; }
-        .main { flex-grow: 1; padding: 25px; overflow-y: auto; background: var(--bg); }
+        .main { flex-grow: 1; padding: 25px; overflow-y: auto; }
+
         button { cursor: pointer; border-radius: 6px; border: none; padding: 10px; width: 100%; font-weight: bold; transition: 0.2s; margin-bottom: 8px; }
-        .btn-google { background: white; color: #444; }
+        .btn-google { background: #24292f; color: white; }
+        @media (prefers-color-scheme: light) { .btn-google { border: 1px solid #ddd; background: white; color: #444; } }
+        
         .btn-save { background: var(--green); color: white; }
-        .btn-pdf { background: #8957e5; color: white; }
+        .btn-pdf { background: #8250df; color: white; }
         .btn-logout { background: transparent; color: #8b949e; border: 1px solid var(--border); font-size: 11px; }
-        table { border-collapse: collapse; width: 100%; background: var(--card); font-size: 11px; color: white; }
+
+        table { border-collapse: collapse; width: 100%; background: var(--card); font-size: 11px; color: var(--text); }
         th, td { border: 1px solid var(--border); height: 32px; text-align: center; min-width: 24px; position: relative; }
-        th { background: #21262d; }
-        .month-name { background: #21262d; text-align: left; padding-left: 10px; font-weight: bold; width: 100px; }
+        th { background: rgba(0,0,0,0.05); color: #8b949e; }
+        .month-name { background: rgba(0,0,0,0.05); text-align: left; padding-left: 10px; font-weight: bold; width: 100px; }
+        
         .day { cursor: pointer; }
-        .weekend { color: var(--orange); background: rgba(227, 179, 65, 0.1); }
-        .holiday { color: var(--red); background: rgba(248, 81, 73, 0.1); }
+        .weekend { color: var(--orange); background: rgba(154, 103, 0, 0.05); }
+        .holiday { color: var(--red); background: rgba(207, 34, 46, 0.05); }
+
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin: 15px 0; text-align: center; }
-        .stat-box { background: #0d1117; padding: 8px; border-radius: 6px; border: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; }
+        .stat-box { background: var(--stat-bg); padding: 8px; border-radius: 6px; border: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; }
         .stat-val { display: block; font-size: 18px; font-weight: bold; }
         .stat-lbl { font-size: 9px; color: #8b949e; text-transform: uppercase; }
+        
         .control-btns { display: flex; gap: 4px; margin-top: 5px; }
-        .btn-mini { width: 22px; padding: 2px; font-size: 12px; background: #30363d; color: white; margin: 0; }
+        .btn-mini { width: 22px; padding: 2px; font-size: 12px; background: var(--border); color: var(--text); margin: 0; }
+
         .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; font-size: 12px; }
-        .color-box { width: 12px; height: 12px; border-radius: 2px; }
+        .color-box { width: 12px; height: 12px; border-radius: 2px; border: 1px solid rgba(0,0,0,0.1); }
+
+        /* Estilo para Exportação PDF (Forçar claro) */
+        .pdf-export { background: white !important; color: black !important; }
+        .pdf-export table { background: white !important; color: black !important; }
+        .pdf-export td, .pdf-export th { border: 1px solid #eee !important; color: black !important; }
     </style>
 </head>
 <body>
@@ -145,7 +171,6 @@
             while(row.cells.length < 38) row.insertCell();
         });
 
-        // Se o totalDias não existir na DB, assume 22
         const total = membros[userEmailEncoded]?.totalDias !== undefined ? membros[userEmailEncoded].totalDias : 22;
         document.getElementById('statTotal').innerText = total;
         document.getElementById('statUsed').innerText = minhasFerias.length;
@@ -159,16 +184,18 @@
         const totalAtual = membros[userEmailEncoded]?.totalDias !== undefined ? membros[userEmailEncoded].totalDias : 22;
         const novoTotal = totalAtual + valor;
         if(novoTotal < 0) return;
-        try {
-            await update(ref(db, `membros/${userEmailEncoded}`), { totalDias: novoTotal });
-        } catch (e) {
-            alert("Erro de permissão! Verifica as Rules no Firebase.");
-        }
+        try { await update(ref(db, `membros/${userEmailEncoded}`), { totalDias: novoTotal }); } 
+        catch (e) { alert("Sem permissão para alterar dias."); }
     }
 
     document.getElementById('btnExport').onclick = () => {
-        const element = document.getElementById('calendar-area');
-        html2pdf().set({ margin: 10, filename: 'Ferias_Equipa.pdf', jsPDF: { orientation: 'landscape' } }).from(element).save();
+        const area = document.getElementById('calendar-area');
+        area.classList.add('pdf-export');
+        html2pdf().set({ 
+            margin: 10, filename: 'Mapa_Ferias_2026.pdf', 
+            html2canvas: { scale: 2 },
+            jsPDF: { orientation: 'landscape' } 
+        }).from(area).save().then(() => area.classList.remove('pdf-export'));
     };
 
     onAuthStateChanged(auth, (u) => { u ? checkAccess(u) : (document.getElementById('userArea').style.display = 'none', document.getElementById('btnLogin').style.display = 'block'); });
