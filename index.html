@@ -22,71 +22,60 @@
 
         body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); display: flex; margin: 0; height: 100vh; overflow: hidden; }
         
-        /* Sidebar ajustada */
         .sidebar { 
             width: 260px; min-width: 260px; 
             background: var(--card); padding: 15px; border-right: 1px solid var(--border); 
             display: flex; flex-direction: column; box-sizing: border-box; overflow-y: auto; 
         }
 
-        .sidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .sidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; gap: 8px; }
+        .header-controls { display: flex; gap: 8px; }
 
         .main { 
             flex-grow: 1; 
             padding: 10px; 
             overflow: auto; 
             display: flex; 
-            align-items: flex-start; /* Alinhado ao topo para facilitar leitura */
+            align-items: flex-start; 
             justify-content: center; 
         }
 
-        .theme-toggle { 
+        /* Botões de Controlo no Topo */
+        .btn-control { 
             background: var(--toggle-bg); border: 1px solid var(--border); 
-            width: 30px; height: 30px; border-radius: 50%; cursor: pointer; 
+            width: 32px; height: 32px; border-radius: 6px; cursor: pointer; 
             color: var(--text); display: flex; align-items: center; justify-content: center;
+            font-size: 14px; transition: 0.2s;
         }
+        .btn-control:hover { background: var(--border); }
         
         button { cursor: pointer; border-radius: 6px; border: none; padding: 8px; width: 100%; font-weight: bold; margin-bottom: 6px; font-size: 13px; }
         .btn-save { background: var(--green); color: white; }
         .btn-pdf { background: #8250df; color: white; }
-        .btn-logout { background: transparent; color: #8b949e; border: 1px solid var(--border); font-size: 10px; margin-top: auto; }
 
-        /* Tabela Otimizada */
+        /* Tabela */
         table { 
-            border-collapse: collapse; 
-            background: var(--card); 
-            font-size: 11px; /* Letra ligeiramente menor para não apertar */
-            color: var(--text); 
+            border-collapse: collapse; background: var(--card); 
+            font-size: 11px; color: var(--text); 
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            table-layout: fixed;
-            width: auto;
+            table-layout: fixed; width: auto;
         }
         
         th, td { 
             border: 1px solid var(--border); 
-            width: 26px; /* Reduzido de 32px para caber melhor */
-            height: 26px;
-            text-align: center; 
-            padding: 0;
-            line-height: 26px;
+            width: 26px; height: 26px;
+            text-align: center; padding: 0; line-height: 26px;
         }
 
         th { font-size: 9px; color: #8b949e; font-weight: normal; }
-
-        .month-name { 
-            background: rgba(128, 128, 128, 0.1); 
-            text-align: left; 
-            padding-left: 8px; 
-            font-weight: bold; 
-            width: 60px; 
-        }
+        .month-name { background: rgba(128, 128, 128, 0.1); text-align: left; padding-left: 8px; font-weight: bold; width: 60px; }
         
         .day { cursor: pointer; transition: 0.1s; }
         .day:hover { filter: brightness(1.2); }
         .weekend { color: var(--orange) !important; font-weight: bold; background: rgba(255, 255, 255, 0.02); }
         .holiday { color: var(--red) !important; font-weight: bold; }
 
-        /* Stats compactos */
+        /* Stats */
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; margin-bottom: 12px; }
         .stat-box { background: var(--stat-bg); padding: 5px; border-radius: 6px; border: 1px solid var(--border); text-align: center; }
         .stat-val { display: block; font-size: 16px; font-weight: bold; }
@@ -105,7 +94,10 @@
 <div class="sidebar">
     <div class="sidebar-header">
         <h2 style="margin:0; font-size: 1.1em;">🏖️ Férias 2026</h2>
-        <button id="themeToggle" class="theme-toggle">☀️</button>
+        <div class="header-controls">
+            <button id="themeToggle" class="btn-control" title="Mudar Tema">☀️</button>
+            <button id="btnLogout" class="btn-control" title="Sair">🚪</button>
+        </div>
     </div>
     
     <div id="userArea">
@@ -114,8 +106,8 @@
             <div class="stat-box">
                 <span id="statTotal" class="stat-val">-</span><span class="stat-lbl">Plafond</span>
                 <div style="display:flex; gap:2px; justify-content:center; margin-top:3px;">
-                    <button id="btnDec" style="width:18px; padding:0; background: var(--toggle-bg); color: var(--text);">-</button>
-                    <button id="btnInc" style="width:18px; padding:0; background: var(--toggle-bg); color: var(--text);">+</button>
+                    <button id="btnDec" style="width:18px; padding:0; background: var(--toggle-bg); color: var(--text); border:1px solid var(--border)">-</button>
+                    <button id="btnInc" style="width:18px; padding:0; background: var(--toggle-bg); color: var(--text); border:1px solid var(--border)">+</button>
                 </div>
             </div>
             <div class="stat-box"><span id="statUsed" class="stat-val">-</span><span class="stat-lbl">Gastos</span></div>
@@ -131,7 +123,6 @@
         <div style="font-size:9px; color:#8b949e; margin: 15px 0 5px 0; text-transform: uppercase; font-weight: bold; border-bottom: 1px solid var(--border);">Meus Períodos:</div>
         <div id="periodList" class="period-list"></div>
     </div>
-    <button id="btnLogout" class="btn-logout">Sair</button>
 </div>
 
 <div class="main" id="calendar-area">
@@ -159,6 +150,7 @@
     let membros = {}; let todasFerias = {}; let userEmailEncoded = ""; let minhasFerias = [];
     const FERIADOS = ["2026-01-01", "2026-04-03", "2026-04-05", "2026-04-25", "2026-05-01", "2026-06-04", "2026-06-10", "2026-08-15", "2026-10-05", "2026-11-01", "2026-12-01", "2026-12-08", "2026-12-25"];
 
+    // Theme Toggle
     const themeBtn = document.getElementById('themeToggle');
     themeBtn.onclick = () => {
         const current = document.body.getAttribute('data-theme');
@@ -278,7 +270,12 @@
 
     document.getElementById('btnExport').onclick = () => {
         const element = document.getElementById('calendar-area');
-        html2pdf().set({ margin: 5, filename: 'Ferias_2026.pdf', jsPDF: { orientation: 'landscape' } }).from(element).save();
+        html2pdf().set({ 
+            margin: 5, 
+            filename: 'Ferias_2026.pdf', 
+            html2canvas: { scale: 2 },
+            jsPDF: { orientation: 'landscape' } 
+        }).from(element).save();
     };
 
     onAuthStateChanged(auth, u => u ? checkAccess(u) : signInWithPopup(auth, provider));
