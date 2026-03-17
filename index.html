@@ -3,60 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão de Férias 2026</title>
+    <title>Férias 2026 Cloud Sync</title>
     <style>
-        :root { --bg: #0e1117; --card: #161b22; --text: #c9d1d9; --blue: #1f6feb; --red: #f85149; --orange: #e3b341; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); display: flex; margin: 0; height: 100vh; }
+        :root { --bg: #0d1117; --card: #161b22; --text: #c9d1d9; --blue: #1f6feb; --green: #238636; --red: #f85149; --orange: #e3b341; }
+        body { font-family: sans-serif; background: var(--bg); color: var(--text); display: flex; margin: 0; height: 100vh; overflow: hidden; }
         
         /* Sidebar */
         .sidebar { width: 300px; background: var(--card); padding: 20px; border-right: 1px solid #30363d; display: flex; flex-direction: column; }
-        .metric { background: var(--bg); padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; }
-        .metric-val { font-size: 24px; font-weight: bold; color: white; }
-        .period-list { flex-grow: 1; overflow-y: auto; font-size: 14px; }
-        .period-item { padding: 8px; border-bottom: 1px solid #30363d; display: flex; justify-content: space-between; }
-        button { cursor: pointer; border-radius: 6px; border: none; font-weight: bold; transition: 0.2s; }
-        .btn-clear { background: var(--red); color: white; padding: 10px; margin-top: 10px; }
+        input[type="password"] { width: 100%; padding: 12px; margin-bottom: 10px; background: #0d1117; border: 1px solid #30363d; color: white; border-radius: 6px; box-sizing: border-box; }
+        button { cursor: pointer; border-radius: 6px; border: none; padding: 12px; width: 100%; font-weight: bold; color: white; margin-bottom: 8px; transition: 0.2s; }
+        .btn-sync { background: var(--blue); }
+        .btn-save { background: var(--green); }
+        .btn-sync:hover, .btn-save:hover { filter: brightness(1.2); }
         
-        /* Main Content */
-        .main { flex-grow: 1; padding: 40px; overflow-y: auto; }
-        table { border-collapse: collapse; width: 100%; table-layout: fixed; background: var(--card); border-radius: 10px; overflow: hidden; }
-        th, td { border: 1px solid #30363d; height: 35px; text-align: center; font-size: 12px; }
-        th { background: #21262d; color: #8b949e; font-weight: normal; }
-        .month-name { text-align: left; padding-left: 15px; font-weight: bold; width: 120px; background: #21262d; }
+        /* Main */
+        .main { flex-grow: 1; padding: 30px; overflow-y: auto; }
+        h1 { margin-top: 0; font-size: 24px; }
+        table { border-collapse: collapse; width: 100%; background: var(--card); border-radius: 8px; overflow: hidden; }
+        th, td { border: 1px solid #30363d; height: 35px; text-align: center; font-size: 11px; min-width: 25px; }
+        th { background: #21262d; color: #8b949e; }
+        .month-name { text-align: left; padding-left: 12px; font-weight: bold; width: 100px; background: #21262d; }
         .day { cursor: pointer; transition: 0.1s; }
-        .day:hover { filter: brightness(1.5); }
+        .day:hover { background: #30363d; }
+        .selected { background: var(--blue) !important; color: white; font-weight: bold; }
         .weekend { color: var(--orange); background: #2d2400; }
-        .holiday { color: var(--red); background: #3d1414; font-weight: bold; }
-        .selected { background: var(--blue) !important; color: white !important; font-weight: bold; box-shadow: inset 0 0 8px rgba(255,255,255,0.3); }
+        .holiday { color: var(--red); background: #3d1414; }
         .empty { background: var(--bg); }
+        
+        #status { font-size: 12px; text-align: center; margin-bottom: 15px; padding: 8px; border-radius: 4px; }
+        .status-ok { background: rgba(35, 134, 54, 0.2); color: #3fb950; }
     </style>
 </head>
 <body>
 
 <div class="sidebar">
-    <h2>📊 Gestão 2026</h2>
-    <div class="metric">
-        <div id="count" class="metric-val">0</div>
-        <div style="font-size: 12px; color: #8b949e;">Dias Marcados</div>
+    <h2 style="margin-top:0">☁️ Cloud Sync</h2>
+    <p style="font-size: 12px; color: #8b949e;">Escolhe uma chave única para acederes aos teus dados em qualquer lugar.</p>
+    
+    <input type="password" id="userKey" placeholder="A tua chave secreta">
+    <button class="btn-sync" id="btnLoad">🔄 Carregar da Nuvem</button>
+    <button class="btn-save" id="btnSave">☁️ Guardar na Nuvem</button>
+    
+    <div id="status">Pronto para sincronizar</div>
+    
+    <hr style="border:0; border-top:1px solid #333; margin: 20px 0;">
+    <div style="text-align: center;">
+        <div id="count" style="font-size: 48px; font-weight: bold;">0</div>
+        <div style="color: #8b949e; font-size: 14px;">Dias de Férias 2026</div>
     </div>
-    <div class="period-list" id="periodList"></div>
-    <button class="btn-clear" onclick="clearAll()">🗑️ Limpar Tudo</button>
 </div>
 
 <div class="main">
     <h1>Planeamento de Férias 2026</h1>
-    <p style="color: #8b949e;">Clica nos dias para marcar ou desmarcar. Os dados são guardados automaticamente.</p>
     <table id="calendar"></table>
 </div>
 
-<script>
-    const FERIADOS = ["2026-01-01", "2026-04-03", "2026-04-05", "2026-04-25", "2026-05-01", "2026-06-10", "2026-08-15", "2026-10-05", "2026-11-01", "2026-12-01", "2026-12-08", "2026-12-25"];
-    let selecionados = JSON.parse(localStorage.getItem('ferias_2026')) || [];
+<script type="module">
+    // Importar Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
+
+    // Configuração fornecida por ti
+    const firebaseConfig = {
+        apiKey: "AIzaSyA9V2yj_wYiR9o6G-jv-9oxH2Roxb91RPQ",
+        authDomain: "vacations-f36d6.firebaseapp.com",
+        databaseURL: "https://vacations-f36d6-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "vacations-f36d6",
+        storageBucket: "vacations-f36d6.firebasestorage.app",
+        messagingSenderId: "842955648867",
+        appId: "1:842955648867:web:3c86b22400ec6bd7d2ad56"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    let selecionados = [];
+
+    const FERIADOS = ["2026-01-01", "2026-04-03", "2026-04-25", "2026-05-01", "2026-06-10", "2026-08-15", "2026-10-05", "2026-11-01", "2026-12-01", "2026-12-08", "2026-12-25"];
 
     function render() {
         const table = document.getElementById('calendar');
         table.innerHTML = "<tr><th>Mês</th>" + Array.from({length: 37}, (_, i) => `<th>${['S','T','Q','Q','S','S','D'][i % 7]}</th>`).join('') + "</tr>";
-        
         const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
         
         meses.forEach((nome, mIdx) => {
@@ -76,54 +102,68 @@
                 
                 if (FERIADOS.includes(dStr)) cell.classList.add('holiday');
                 else if (d.getDay() === 0 || d.getDay() === 6) cell.classList.add('weekend');
-                
                 if (selecionados.includes(dStr)) cell.classList.add('selected');
                 
-                cell.onclick = () => toggleDay(dStr);
+                cell.onclick = () => {
+                    if (selecionados.includes(dStr)) {
+                        selecionados = selecionados.filter(item => item !== dStr);
+                    } else {
+                        selecionados.push(dStr);
+                    }
+                    render();
+                };
                 d.setDate(d.getDate() + 1);
             }
             while(row.cells.length < 38) row.insertCell().className = 'empty';
         });
-        updateStats();
-    }
-
-    function toggleDay(date) {
-        if (selecionados.includes(date)) selecionados = selecionados.filter(d => d !== date);
-        else selecionados.push(date);
-        save();
-    }
-
-    function save() {
-        localStorage.setItem('ferias_2026', JSON.stringify(selecionados));
-        render();
-    }
-
-    function clearAll() {
-        if(confirm("Limpar todas as seleções?")) { selecionados = []; save(); }
-    }
-
-    function updateStats() {
         document.getElementById('count').innerText = selecionados.length;
-        const list = document.getElementById('periodList');
-        list.innerHTML = "<h3>Períodos:</h3>";
+    }
+
+    // Função para Guardar
+    window.saveToCloud = async function() {
+        const key = document.getElementById('userKey').value;
+        const status = document.getElementById('status');
+        if(!key) return alert("Por favor, insere uma chave!");
         
-        let sorted = [...selecionados].sort();
-        if(sorted.length === 0) return;
+        status.innerText = "⏳ A guardar...";
+        status.className = "";
         
-        let start = sorted[0], end = sorted[0];
-        for(let i=1; i <= sorted.length; i++) {
-            let curr = sorted[i];
-            let lastDate = new Date(end);
-            lastDate.setDate(lastDate.getDate() + 1);
-            
-            if(curr === lastDate.toISOString().split('T')[0]) {
-                end = curr;
-            } else {
-                list.innerHTML += `<div class="period-item">📅 ${start.split('-').reverse().slice(0,2).join('/')} a ${end.split('-').reverse().slice(0,2).join('/')}</div>`;
-                start = curr; end = curr;
-            }
+        try {
+            await set(ref(db, 'usuarios/' + key), selecionados);
+            status.innerText = "✅ Dados guardados na nuvem!";
+            status.className = "status-ok";
+        } catch (e) {
+            console.error(e);
+            alert("Erro ao guardar. Verifica as regras do Firebase.");
         }
     }
+
+    // Função para Carregar
+    window.loadFromCloud = async function() {
+        const key = document.getElementById('userKey').value;
+        const status = document.getElementById('status');
+        if(!key) return alert("Insere a tua chave para carregar!");
+        
+        status.innerText = "⏳ A carregar...";
+        
+        try {
+            const snapshot = await get(ref(db, 'usuarios/' + key));
+            if (snapshot.exists()) {
+                selecionados = snapshot.val();
+                render();
+                status.innerText = "✅ Sincronização concluída!";
+                status.className = "status-ok";
+            } else {
+                status.innerText = "❌ Chave não encontrada.";
+            }
+        } catch (e) {
+            alert("Erro ao carregar dados.");
+        }
+    }
+
+    // Atribuir cliques
+    document.getElementById('btnSave').onclick = saveToCloud;
+    document.getElementById('btnLoad').onclick = loadFromCloud;
 
     render();
 </script>
