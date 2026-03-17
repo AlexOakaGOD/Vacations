@@ -6,30 +6,36 @@
     <title>Férias Equipa 2026</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        /* Variáveis de Cor - Modo Claro (Default) */
         :root { 
             --bg: #ffffff; --card: #f6f8fa; --text: #24292f; 
             --border: #d0d7de; --stat-bg: #ffffff;
             --blue: #0969da; --green: #1a7f37; --red: #cf222e; 
-            --orange: #9a6700;
+            --orange: #9a6700; --toggle-bg: #eeeeee;
         }
 
-        /* Variáveis de Cor - Modo Escuro */
         [data-theme="dark"] {
             --bg: #0d1117; --card: #161b22; --text: #c9d1d9; 
             --border: #30363d; --stat-bg: #0d1117;
             --blue: #1f6feb; --green: #238636; --red: #f85149; 
-            --orange: #e3b341;
+            --orange: #e3b341; --toggle-bg: #30363d;
         }
 
-        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); display: flex; margin: 0; height: 100vh; overflow: hidden; transition: background 0.3s, color 0.3s; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); display: flex; margin: 0; height: 100vh; overflow: hidden; transition: 0.2s; }
         
         /* Sidebar */
         .sidebar { width: 300px; background: var(--card); padding: 20px; border-right: 1px solid var(--border); display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box; position: relative; }
         .main { flex-grow: 1; padding: 25px; overflow-y: auto; }
 
-        /* Botão Tema */
-        .theme-toggle { position: absolute; top: 15px; right: 15px; background: var(--border); border: none; padding: 5px 10px; border-radius: 20px; font-size: 14px; cursor: pointer; width: auto; color: var(--text); }
+        /* Botão Tema - Ajustado para visibilidade */
+        .theme-toggle { 
+            position: absolute; top: 18px; right: 20px; 
+            background: var(--toggle-bg); border: 1px solid var(--border); 
+            padding: 6px 12px; border-radius: 50px; font-size: 16px; 
+            cursor: pointer; color: var(--text); z-index: 100;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .theme-toggle:hover { filter: brightness(1.1); }
 
         button { cursor: pointer; border-radius: 6px; border: none; padding: 10px; width: 100%; font-weight: bold; transition: 0.2s; margin-bottom: 8px; }
         .btn-google { background: #24292f; color: white; border: 1px solid transparent; }
@@ -37,7 +43,7 @@
         
         .btn-save { background: var(--green); color: white; }
         .btn-pdf { background: #8250df; color: white; }
-        .btn-logout { background: transparent; color: #8b949e; border: 1px solid var(--border); font-size: 11px; }
+        .btn-logout { background: transparent; color: #8b949e; border: 1px solid var(--border); font-size: 11px; margin-top: 15px; }
 
         /* Tabela */
         table { border-collapse: collapse; width: 100%; background: var(--card); font-size: 11px; color: var(--text); }
@@ -61,7 +67,6 @@
         .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; font-size: 12px; }
         .color-box { width: 12px; height: 12px; border-radius: 2px; border: 1px solid rgba(0,0,0,0.1); }
 
-        /* PDF: Forçar sempre modo claro para impressão */
         .pdf-export { background: white !important; color: black !important; }
         .pdf-export table, .pdf-export td, .pdf-export th { background: white !important; border-color: #eee !important; color: black !important; }
     </style>
@@ -74,7 +79,7 @@
         <h2 style="margin-top:0">🏖️ Férias 2026</h2>
         <button id="btnLogin" class="btn-google">Entrar com Google</button>
         <div id="userArea" style="display:none">
-            <div id="userInfo" style="font-weight:bold; margin-bottom:10px;"></div>
+            <div id="userInfo" style="font-weight:bold; margin-bottom:15px; padding-right: 40px;"></div>
             <div class="stats-grid">
                 <div class="stat-box">
                     <span id="statTotal" class="stat-val">22</span>
@@ -119,11 +124,11 @@
     let membros = {}; let todasFerias = {}; let userEmailEncoded = ""; let minhasFerias = [];
     const FERIADOS = ["2026-01-01", "2026-04-03", "2026-04-25", "2026-05-01", "2026-06-10", "2026-08-15", "2026-10-05", "2026-11-01", "2026-12-01", "2026-12-08", "2026-12-25"];
 
-    // Lógica do Tema (Dark/Light)
+    // Lógica do Tema
     const toggle = document.getElementById('themeToggle');
-    const currentTheme = localStorage.getItem('theme') || 'light';
-    document.body.setAttribute('data-theme', currentTheme);
-    toggle.innerText = currentTheme === 'dark' ? '☀️' : '🌙';
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.body.setAttribute('data-theme', savedTheme);
+    toggle.innerText = savedTheme === 'dark' ? '☀️' : '🌙';
 
     toggle.onclick = () => {
         let theme = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
@@ -203,7 +208,7 @@
         const novoTotal = totalAtual + valor;
         if(novoTotal < 0) return;
         try { await update(ref(db, `membros/${userEmailEncoded}`), { totalDias: novoTotal }); } 
-        catch (e) { alert("Erro ao ajustar dias."); }
+        catch (e) { console.error(e); }
     }
 
     document.getElementById('btnExport').onclick = () => {
