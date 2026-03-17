@@ -11,36 +11,27 @@
             --blue: #1f6feb; --green: #238636; --red: #f85149; 
             --orange: #e3b341; --border: #30363d;
         }
-
         body { font-family: sans-serif; background: var(--bg); color: var(--text); display: flex; margin: 0; height: 100vh; overflow: hidden; }
         .sidebar { width: 300px; background: var(--card); padding: 20px; border-right: 1px solid var(--border); display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box; }
         .main { flex-grow: 1; padding: 25px; overflow-y: auto; background: var(--bg); }
-
         button { cursor: pointer; border-radius: 6px; border: none; padding: 10px; width: 100%; font-weight: bold; transition: 0.2s; margin-bottom: 8px; }
         .btn-google { background: white; color: #444; }
         .btn-save { background: var(--green); color: white; }
         .btn-pdf { background: #8957e5; color: white; }
         .btn-logout { background: transparent; color: #8b949e; border: 1px solid var(--border); font-size: 11px; }
-
         table { border-collapse: collapse; width: 100%; background: var(--card); font-size: 11px; color: white; }
         th, td { border: 1px solid var(--border); height: 32px; text-align: center; min-width: 24px; position: relative; }
         th { background: #21262d; }
         .month-name { background: #21262d; text-align: left; padding-left: 10px; font-weight: bold; width: 100px; }
-        
         .day { cursor: pointer; }
         .weekend { color: var(--orange); background: rgba(227, 179, 65, 0.1); }
         .holiday { color: var(--red); background: rgba(248, 81, 73, 0.1); }
-
-        /* Estatísticas e Ajuste de Dias */
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin: 15px 0; text-align: center; }
         .stat-box { background: #0d1117; padding: 8px; border-radius: 6px; border: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; }
         .stat-val { display: block; font-size: 18px; font-weight: bold; }
         .stat-lbl { font-size: 9px; color: #8b949e; text-transform: uppercase; }
-        
         .control-btns { display: flex; gap: 4px; margin-top: 5px; }
         .btn-mini { width: 22px; padding: 2px; font-size: 12px; background: #30363d; color: white; margin: 0; }
-        .btn-mini:hover { background: #444; }
-
         .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; font-size: 12px; }
         .color-box { width: 12px; height: 12px; border-radius: 2px; }
     </style>
@@ -51,13 +42,11 @@
     <div>
         <h2 style="margin-top:0">🏖️ Férias 2026</h2>
         <button id="btnLogin" class="btn-google">Entrar com Google</button>
-        
         <div id="userArea" style="display:none">
             <div id="userInfo" style="font-weight:bold; margin-bottom:10px;"></div>
-            
             <div class="stats-grid">
                 <div class="stat-box">
-                    <span id="statTotal" class="stat-val">0</span>
+                    <span id="statTotal" class="stat-val">22</span>
                     <span class="stat-lbl">Total</span>
                     <div class="control-btns">
                         <button class="btn-mini" id="btnDec">-</button>
@@ -65,25 +54,18 @@
                     </div>
                 </div>
                 <div class="stat-box"><span id="statUsed" class="stat-val">0</span><span class="stat-lbl">Usados</span></div>
-                <div class="stat-box"><span id="statLeft" class="stat-val">0</span><span class="stat-lbl">Faltam</span></div>
+                <div class="stat-box"><span id="statLeft" class="stat-val">22</span><span class="stat-lbl">Faltam</span></div>
             </div>
-
             <button class="btn-save" id="btnSave">☁️ Guardar Férias</button>
             <button class="btn-pdf" id="btnExport">📄 Baixar PDF</button>
             <div id="status" style="font-size:11px; text-align:center; margin: 5px 0;">Sincronizado</div>
-            <hr style="border:0; border-top:1px solid var(--border); margin: 15px 0;">
-            <div id="legend"></div>
+            <hr style="border:0; border-top:1px solid var(--border); margin: 15px 0;"><div id="legend"></div>
         </div>
     </div>
-
-    <div id="footerSidebar" style="display:none; text-align: center;">
-        <button id="btnLogout" class="btn-logout">Sair da Conta</button>
-    </div>
+    <div id="footerSidebar" style="display:none; text-align: center;"><button id="btnLogout" class="btn-logout">Sair da Conta</button></div>
 </div>
 
-<div class="main" id="calendar-area">
-    <table id="calendar"></table>
-</div>
+<div class="main" id="calendar-area"><table id="calendar"></table></div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
@@ -117,16 +99,13 @@
             document.getElementById('footerSidebar').style.display = 'block';
             document.getElementById('btnLogin').style.display = 'none';
             document.getElementById('userInfo').innerText = "👤 " + snap.val().nome;
-            
-            // Sincroniza Membros e Equipa
             onValue(ref(db, 'membros'), (s) => { membros = s.val() || {}; render(); renderLegend(); });
             onValue(ref(db, 'equipa'), (s) => { todasFerias = s.val() || {}; minhasFerias = todasFerias[userEmailEncoded] || []; render(); });
         } else { signOut(auth); }
     }
 
     function renderLegend() {
-        const legend = document.getElementById('legend');
-        legend.innerHTML = "";
+        const legend = document.getElementById('legend'); legend.innerHTML = "";
         Object.entries(membros).forEach(([email, d]) => {
             legend.innerHTML += `<div class="legend-item"><div class="color-box" style="background:${d.cor}"></div> ${d.nome}</div>`;
         });
@@ -143,24 +122,18 @@
             let d = new Date(2026, mIdx, 1);
             let offset = d.getDay() === 0 ? 6 : d.getDay() - 1;
             for(let i=0; i<offset; i++) row.insertCell();
-            
             while(d.getMonth() === mIdx) {
-                let cell = row.insertCell();
-                let dStr = d.toISOString().split('T')[0];
-                cell.innerText = d.getDate();
-                cell.className = 'day';
+                let cell = row.insertCell(); let dStr = d.toISOString().split('T')[0];
+                cell.innerText = d.getDate(); cell.className = 'day';
                 if (FERIADOS.includes(dStr)) cell.classList.add('holiday');
                 else if (d.getDay() === 0 || d.getDay() === 6) cell.classList.add('weekend');
 
                 let usersNoDia = Object.keys(todasFerias).filter(e => todasFerias[e]?.includes(dStr));
-                if (usersNoDia.length === 1) {
-                    cell.style.background = membros[usersNoDia[0]]?.cor || 'transparent';
-                } else if (usersNoDia.length > 1) {
-                    let c1 = membros[usersNoDia[0]]?.cor || '#333';
-                    let c2 = membros[usersNoDia[1]]?.cor || '#666';
+                if (usersNoDia.length === 1) cell.style.background = membros[usersNoDia[0]]?.cor || '';
+                else if (usersNoDia.length > 1) {
+                    let c1 = membros[usersNoDia[0]]?.cor || '#333'; let c2 = membros[usersNoDia[1]]?.cor || '#666';
                     cell.style.background = `linear-gradient(to bottom left, ${c1} 50%, ${c2} 50%)`;
                 }
-
                 cell.onclick = () => {
                     if (minhasFerias.includes(dStr)) minhasFerias = minhasFerias.filter(v => v !== dStr);
                     else minhasFerias.push(dStr);
@@ -172,20 +145,25 @@
             while(row.cells.length < 38) row.insertCell();
         });
 
-        const total = membros[userEmailEncoded]?.totalDias || 0;
+        // Se o totalDias não existir na DB, assume 22
+        const total = membros[userEmailEncoded]?.totalDias !== undefined ? membros[userEmailEncoded].totalDias : 22;
         document.getElementById('statTotal').innerText = total;
         document.getElementById('statUsed').innerText = minhasFerias.length;
         document.getElementById('statLeft').innerText = total - minhasFerias.length;
     }
 
-    // Ajuste de Dias diretamente no Browser
     document.getElementById('btnInc').onclick = () => ajustarDias(1);
     document.getElementById('btnDec').onclick = () => ajustarDias(-1);
 
     async function ajustarDias(valor) {
-        const novoTotal = (membros[userEmailEncoded]?.totalDias || 0) + valor;
+        const totalAtual = membros[userEmailEncoded]?.totalDias !== undefined ? membros[userEmailEncoded].totalDias : 22;
+        const novoTotal = totalAtual + valor;
         if(novoTotal < 0) return;
-        await update(ref(db, `membros/${userEmailEncoded}`), { totalDias: novoTotal });
+        try {
+            await update(ref(db, `membros/${userEmailEncoded}`), { totalDias: novoTotal });
+        } catch (e) {
+            alert("Erro de permissão! Verifica as Rules no Firebase.");
+        }
     }
 
     document.getElementById('btnExport').onclick = () => {
