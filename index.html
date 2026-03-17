@@ -28,21 +28,20 @@
             display: flex; flex-direction: column; box-sizing: border-box; overflow-y: auto; 
         }
 
-        /* AJUSTE: Centralização total e margem para o Sol */
         .main { 
             flex-grow: 1; 
-            padding: 60px 20px 20px 20px; /* 60px no topo para dar espaço ao botão */
+            padding: 40px; 
             overflow: auto; 
             display: flex; 
-            align-items: center; /* Centraliza verticalmente */
-            justify-content: center; /* Centraliza horizontalmente */
+            justify-content: center;
         }
 
+        /* Botão agora dentro da sidebar ou fixo sem bater no calendário */
         .theme-toggle { 
-            position: fixed; top: 15px; right: 25px; 
             background: var(--toggle-bg); border: 1px solid var(--border); 
-            width: 35px; height: 35px; border-radius: 50%; cursor: pointer; 
-            color: var(--text); display: flex; align-items: center; justify-content: center; z-index: 1000; 
+            width: 32px; height: 32px; border-radius: 50%; cursor: pointer; 
+            color: var(--text); display: flex; align-items: center; justify-content: center;
+            position: absolute; top: 15px; left: 230px; z-index: 100;
         }
         
         button { cursor: pointer; border-radius: 6px; border: none; padding: 10px; width: 100%; font-weight: bold; margin-bottom: 8px; }
@@ -50,18 +49,7 @@
         .btn-pdf { background: #8250df; color: white; }
         .btn-logout { background: transparent; color: #8b949e; border: 1px solid var(--border); font-size: 11px; margin-top: auto; }
 
-        /* AJUSTE: Tabela com largura máxima controlada para manter o centro */
-        table { 
-            border-collapse: collapse; 
-            width: auto; 
-            min-width: 900px; 
-            background: var(--card); 
-            font-size: 11px; 
-            color: var(--text); 
-            table-layout: fixed;
-            margin: auto;
-        }
-        
+        table { border-collapse: collapse; min-width: 900px; background: var(--card); font-size: 11px; color: var(--text); table-layout: fixed; margin-top: 20px; }
         th, td { border: 1px solid var(--border); padding: 8px 0; text-align: center; }
         .month-name { background: rgba(128, 128, 128, 0.15); text-align: left; padding-left: 8px; font-weight: bold; width: 65px; }
         
@@ -80,17 +68,16 @@
         .sobra-pill { font-weight: bold; background: var(--toggle-bg); padding: 2px 6px; border-radius: 10px; font-size: 10px; }
 
         .period-list { margin-top: 15px; }
-        .period-item { font-size: 10px; padding: 8px; background: var(--stat-bg); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 5px; border-left: 3px solid var(--blue); }
+        .period-item { font-size: 10px; padding: 8px; background: var(--stat-bg); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 5px; border-left: 3px solid var(--blue); color: var(--text); }
     </style>
 </head>
 <body data-theme="dark">
 
-<button id="themeToggle" class="theme-toggle">☀️</button>
-
 <div class="sidebar">
+    <button id="themeToggle" class="theme-toggle">☀️</button>
     <h2 style="margin-top:0;">🏖️ Férias 2026</h2>
     <div id="userArea">
-        <div id="userInfo" style="font-weight:bold; margin-bottom:15px;"></div>
+        <div id="userInfo" style="font-weight:bold; margin-bottom:15px; font-size: 18px;"></div>
         <div class="stats-grid">
             <div class="stat-box">
                 <span id="statTotal" class="stat-val">22</span><span class="stat-lbl">Plafond</span>
@@ -104,8 +91,13 @@
         </div>
         <button class="btn-save" id="btnSave">Guardar Alterações</button>
         <button class="btn-pdf" id="btnExport">Gerar PDF</button>
-        <div id="status"></div>
+        <div id="status" style="font-size:12px; text-align:center; color: var(--green); margin-bottom: 10px;"></div>
+        
+        <div style="font-size:10px; color:#8b949e; margin-bottom:8px; text-transform: uppercase; font-weight: bold;">Sobra da Equipa:</div>
         <div id="legend"></div>
+        
+        <hr style="border:0; border-top:1px solid var(--border); margin: 15px 0;">
+        <div style="font-size:10px; color:#8b949e; margin-bottom:8px; text-transform: uppercase; font-weight: bold;">Os Meus Períodos:</div>
         <div id="periodList" class="period-list"></div>
     </div>
     <button id="btnLogout" class="btn-logout">Sair</button>
@@ -136,6 +128,7 @@
     let membros = {}; let todasFerias = {}; let userEmailEncoded = ""; let minhasFerias = [];
     const FERIADOS = ["2026-01-01", "2026-04-03", "2026-04-25", "2026-05-01", "2026-06-04", "2026-06-10", "2026-08-15", "2026-10-05", "2026-11-01", "2026-12-01", "2026-12-08", "2026-12-25"];
 
+    // TEMA
     const themeBtn = document.getElementById('themeToggle');
     themeBtn.onclick = () => {
         const current = document.body.getAttribute('data-theme');
@@ -153,6 +146,27 @@
         return (d.getDay() !== 0 && d.getDay() !== 6 && !FERIADOS.includes(dStr));
     }
 
+    // REINSTALADA: Função para mostrar as datas na barra lateral
+    function formatarPeriodos(datas) {
+        if (!datas || datas.length === 0) return "";
+        const sorted = [...datas].sort();
+        let periodos = [];
+        let start = sorted[0], end = sorted[0];
+        for (let i = 1; i <= sorted.length; i++) {
+            let current = sorted[i];
+            let dEnd = new Date(end + "T00:00:00"), dCurr = current ? new Date(current + "T00:00:00") : null;
+            if (dCurr && (dCurr - dEnd) / 86400000 === 1) { end = current; } 
+            else {
+                const opt = { weekday: 'short', day: '2-digit', month: '2-digit' };
+                const sF = new Date(start + "T00:00:00").toLocaleDateString('pt-PT', opt);
+                const eF = new Date(end + "T00:00:00").toLocaleDateString('pt-PT', opt);
+                periodos.push(start === end ? sF : `${sF} a ${eF}`);
+                start = current; end = current;
+            }
+        }
+        return periodos.map(p => `<div class="period-item">${p}</div>`).join('');
+    }
+
     async function checkAccess(user) {
         userEmailEncoded = user.email.replace(/\./g, '_');
         const snap = await get(ref(db, 'membros/' + userEmailEncoded));
@@ -167,6 +181,17 @@
         const table = document.getElementById('calendar');
         table.innerHTML = "<tr><th class='month-name'>Mês</th>" + Array.from({length: 37}, (_, i) => `<th>${['S','T','Q','Q','S','S','D'][i % 7]}</th>`).join('') + "</tr>";
         
+        // Renderizar Legenda com Sobra
+        const leg = document.getElementById('legend');
+        leg.innerHTML = "";
+        Object.entries(membros).forEach(([email, m]) => {
+            const sobra = (m.totalDias || 22) - (todasFerias[email] || []).filter(d => isDiaUtil(d)).length;
+            leg.innerHTML += `<div class="legend-item"><div class="legend-name"><div class="color-dot" style="background:${m.cor}"></div><span>${m.nome}</span></div><span class="sobra-pill">${sobra}</span></div>`;
+        });
+
+        // Renderizar Datas na Barra Lateral
+        document.getElementById('periodList').innerHTML = formatarPeriodos(minhasFerias);
+
         const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
         meses.forEach((nome, mIdx) => {
             let row = table.insertRow();
@@ -216,7 +241,8 @@
 
     document.getElementById('btnSave').onclick = async () => {
         await set(ref(db, 'equipa/' + userEmailEncoded), minhasFerias);
-        alert("Guardado!");
+        document.getElementById('status').innerText = "✅ Guardado!";
+        setTimeout(() => document.getElementById('status').innerText = "", 3000);
     };
 
     onAuthStateChanged(auth, u => u ? checkAccess(u) : signInWithPopup(auth, provider));
