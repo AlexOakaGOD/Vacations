@@ -7,36 +7,35 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root { 
-            --bg: #ffffff; --card: #f6f8fa; --text: #24292f; 
-            --border: #d0d7de; --stat-bg: #ffffff;
-            --blue: #0969da; --green: #1a7f37; --red: #cf222e; 
-            --orange: #9a6700; --toggle-bg: #eeeeee;
-        }
-
-        [data-theme="dark"] {
             --bg: #0d1117; --card: #161b22; --text: #c9d1d9; 
             --border: #30363d; --stat-bg: #0d1117;
             --blue: #1f6feb; --green: #238636; --red: #f85149; 
             --orange: #e3b341; --toggle-bg: #30363d;
         }
 
+        [data-theme="light"] {
+            --bg: #ffffff; --card: #f6f8fa; --text: #24292f; 
+            --border: #d0d7de; --stat-bg: #ffffff;
+            --blue: #0969da; --green: #1a7f37; --red: #cf222e; 
+            --orange: #9a6700; --toggle-bg: #eeeeee;
+        }
+
         body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); display: flex; margin: 0; height: 100vh; overflow: hidden; }
         
-        /* Sidebar Fixa */
         .sidebar { 
-            width: 280px; min-width: 280px; max-width: 280px; 
+            width: 300px; min-width: 300px; 
             background: var(--card); padding: 20px; border-right: 1px solid var(--border); 
             display: flex; flex-direction: column; box-sizing: border-box; overflow-y: auto; 
         }
 
         .sidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 
-        /* Área do Calendário - Agora preenche tudo */
+        /* ÁREA PRINCIPAL: Agora sem restrições de largura */
         .main { 
             flex-grow: 1; 
-            padding: 20px; 
+            padding: 15px; 
             overflow: auto; 
-            display: block; /* Mudado de flex para block para permitir expansão natural */
+            display: block; 
         }
 
         .theme-toggle { 
@@ -50,55 +49,55 @@
         .btn-pdf { background: #8250df; color: white; }
         .btn-logout { background: transparent; color: #8b949e; border: 1px solid var(--border); font-size: 11px; margin-top: auto; }
 
-        /* Tabela Fluida */
+        /* CALENDÁRIO GIGANTE */
         table { 
             border-collapse: collapse; 
-            width: 100%; /* Ocupa todo o ecrã */
-            min-width: 1000px; /* Garante que não fica ilegível em ecrãs muito pequenos */
+            width: 99%; /* Ocupa quase a largura toda da área main */
+            height: 90vh; /* Ocupa quase a altura toda */
             background: var(--card); 
-            font-size: 12px; 
+            font-size: 13px; /* Aumentado para melhor leitura */
             color: var(--text); 
-            table-layout: fixed; 
+            margin: 0 auto;
         }
         
-        th, td { border: 1px solid var(--border); padding: 10px 0; text-align: center; }
+        th, td { border: 1px solid var(--border); text-align: center; }
         .month-name { background: rgba(128, 128, 128, 0.15); text-align: left; padding-left: 10px; font-weight: bold; width: 80px; }
         
-        .day { cursor: pointer; transition: 0.1s; }
-        .day:hover { filter: brightness(0.9); }
-        .weekend { color: var(--orange) !important; font-weight: bold; background: rgba(128, 128, 128, 0.05); }
+        .day { cursor: pointer; transition: 0.1s; height: 100%; }
+        .day:hover { filter: brightness(1.2); outline: 1px solid var(--blue); }
+        .weekend { color: var(--orange) !important; font-weight: bold; background: rgba(255, 255, 255, 0.02); }
         .holiday { color: var(--red) !important; font-weight: bold; }
 
+        /* Stats e Legendas */
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin: 15px 0; }
         .stat-box { background: var(--stat-bg); padding: 8px; border-radius: 6px; border: 1px solid var(--border); text-align: center; }
         .stat-val { display: block; font-size: 18px; font-weight: bold; }
         .stat-lbl { font-size: 9px; color: #8b949e; text-transform: uppercase; }
 
         .legend-item { display: flex; align-items: center; justify-content: space-between; font-size: 11px; margin-bottom: 5px; }
-        .legend-name { display: flex; align-items: center; gap: 8px; }
-        .color-dot { width: 10px; height: 10px; border-radius: 2px; }
-        .sobra-pill { font-weight: bold; background: var(--toggle-bg); padding: 2px 6px; border-radius: 10px; font-size: 10px; }
+        .color-dot { width: 12px; height: 12px; border-radius: 3px; margin-right: 8px; }
+        .sobra-pill { font-weight: bold; background: var(--toggle-bg); padding: 2px 8px; border-radius: 10px; font-size: 10px; }
 
         .period-list { margin-top: 15px; }
-        .period-item { font-size: 10px; padding: 8px; background: var(--stat-bg); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 5px; border-left: 3px solid var(--blue); color: var(--text); }
+        .period-item { font-size: 11px; padding: 10px; background: var(--stat-bg); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 6px; border-left: 4px solid var(--blue); color: var(--text); }
     </style>
 </head>
 <body data-theme="dark">
 
 <div class="sidebar">
     <div class="sidebar-header">
-        <h2 style="margin:0; font-size: 1.2em;">🏖️ Férias 2026</h2>
+        <h2 style="margin:0; font-size: 1.3em;">🏖️ Férias 2026</h2>
         <button id="themeToggle" class="theme-toggle">☀️</button>
     </div>
     
     <div id="userArea">
-        <div id="userInfo" style="font-weight:bold; margin-bottom:15px; font-size: 18px;"></div>
+        <div id="userInfo" style="font-weight:bold; margin-bottom:15px; font-size: 18px; color: var(--blue);"></div>
         <div class="stats-grid">
             <div class="stat-box">
                 <span id="statTotal" class="stat-val">22</span><span class="stat-lbl">Plafond</span>
                 <div style="display:flex; gap:2px; justify-content:center; margin-top:5px;">
-                    <button id="btnDec" style="width:20px; padding:2px;">-</button>
-                    <button id="btnInc" style="width:20px; padding:2px;">+</button>
+                    <button id="btnDec" style="width:22px; padding:2px; background: var(--toggle-bg); color: var(--text);">-</button>
+                    <button id="btnInc" style="width:22px; padding:2px; background: var(--toggle-bg); color: var(--text);">+</button>
                 </div>
             </div>
             <div class="stat-box"><span id="statUsed" class="stat-val">0</span><span class="stat-lbl">Gastos</span></div>
@@ -106,16 +105,15 @@
         </div>
         <button class="btn-save" id="btnSave">Guardar Alterações</button>
         <button class="btn-pdf" id="btnExport">Gerar PDF</button>
-        <div id="status" style="font-size:12px; text-align:center; color: var(--green); margin-bottom: 10px;"></div>
+        <div id="status" style="font-size:12px; text-align:center; color: var(--green); margin: 5px 0;"></div>
         
-        <div style="font-size:10px; color:#8b949e; margin-bottom:8px; text-transform: uppercase; font-weight: bold;">Sobra da Equipa:</div>
+        <div style="font-size:10px; color:#8b949e; margin: 15px 0 8px 0; text-transform: uppercase; font-weight: bold; border-bottom: 1px solid var(--border);">Sobra da Equipa:</div>
         <div id="legend"></div>
         
-        <hr style="border:0; border-top:1px solid var(--border); margin: 15px 0;">
-        <div style="font-size:10px; color:#8b949e; margin-bottom:8px; text-transform: uppercase; font-weight: bold;">Os Meus Períodos:</div>
+        <div style="font-size:10px; color:#8b949e; margin: 20px 0 8px 0; text-transform: uppercase; font-weight: bold; border-bottom: 1px solid var(--border);">Os Meus Períodos:</div>
         <div id="periodList" class="period-list"></div>
     </div>
-    <button id="btnLogout" class="btn-logout">Sair</button>
+    <button id="btnLogout" class="btn-logout" style="margin-top: 20px;">Sair</button>
 </div>
 
 <div class="main" id="calendar-area">
@@ -149,11 +147,7 @@
         const next = current === 'dark' ? 'light' : 'dark';
         document.body.setAttribute('data-theme', next);
         themeBtn.innerText = next === 'dark' ? '☀️' : '🌙';
-        localStorage.setItem('theme', next);
     };
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    document.body.setAttribute('data-theme', savedTheme);
-    themeBtn.innerText = savedTheme === 'dark' ? '☀️' : '🌙';
 
     function isDiaUtil(dStr) {
         const d = new Date(dStr + "T00:00:00");
@@ -198,7 +192,7 @@
         leg.innerHTML = "";
         Object.entries(membros).forEach(([email, m]) => {
             const sobra = (m.totalDias || 22) - (todasFerias[email] || []).filter(d => isDiaUtil(d)).length;
-            leg.innerHTML += `<div class="legend-item"><div class="legend-name"><div class="color-dot" style="background:${m.cor}"></div><span>${m.nome}</span></div><span class="sobra-pill">${sobra}</span></div>`;
+            leg.innerHTML += `<div class="legend-item"><div style="display:flex;align-items:center;"><div class="color-dot" style="background:${m.cor}"></div><span>${m.nome}</span></div><span class="sobra-pill">${sobra}</span></div>`;
         });
 
         document.getElementById('periodList').innerHTML = formatarPeriodos(minhasFerias);
@@ -237,6 +231,8 @@
                 };
                 d.setDate(d.getDate() + 1);
             }
+            // Preencher o resto da linha se necessário
+            while(row.cells.length < 38) row.insertCell();
         });
         document.getElementById('statTotal').innerText = membros[userEmailEncoded]?.totalDias || 22;
         document.getElementById('statUsed').innerText = minhasFerias.filter(d => isDiaUtil(d)).length;
