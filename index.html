@@ -25,17 +25,15 @@
         .sidebar { width: 260px; min-width: 260px; background: var(--card); padding: 15px; border-right: 1px solid var(--border); display: flex; flex-direction: column; box-sizing: border-box; overflow-y: auto; }
         .sidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
 
-        /* CENTRALIZAÇÃO E TOPO */
         .main { 
             flex-grow: 1; padding: 40px 20px; overflow: auto; 
             display: flex; align-items: flex-start; justify-content: center; background: var(--bg);
         }
 
-        /* TABELA E CÉLULAS FIXAS */
         table { 
             border-collapse: collapse; background: var(--card); font-size: 11px; color: var(--text); 
             box-shadow: 0 4px 20px rgba(0,0,0,0.4); table-layout: fixed; 
-            width: 1050px; min-width: 1050px; /* Mantém tamanho fixo */
+            width: 1050px; min-width: 1050px;
         }
         
         th, td { 
@@ -47,9 +45,17 @@
         .day { cursor: pointer; transition: 0.1s; }
         .day:hover { filter: brightness(1.3); }
 
-        /* Cores de texto apenas (o fundo é via JS) */
         .weekend-text { color: var(--orange) !important; font-weight: bold; }
         .holiday-text { color: var(--red) !important; font-weight: bold; }
+
+        /* Estilo da Legenda Clicável */
+        .legend-item { 
+            display: flex; align-items: center; justify-content: space-between; 
+            font-size: 11px; margin-bottom: 6px; cursor: pointer; 
+            transition: opacity 0.2s; padding: 4px; border-radius: 4px;
+        }
+        .legend-item:hover { background: rgba(255,255,255,0.05); }
+        .legend-item.hidden { opacity: 0.3; text-decoration: line-through; }
 
         .theme-toggle, .btn-logout-top { background: var(--toggle-bg); border: 1px solid var(--border); width: 32px; height: 32px; border-radius: 50%; cursor: pointer; color: var(--text); display: flex; align-items: center; justify-content: center; font-size: 16px; }
         button { cursor: pointer; border-radius: 6px; border: none; padding: 8px; width: 100%; font-weight: bold; margin-bottom: 6px; font-size: 13px; }
@@ -59,8 +65,7 @@
         .stat-box { background: var(--stat-bg); padding: 5px; border-radius: 6px; border: 1px solid var(--border); text-align: center; }
         .stat-val { display: block; font-size: 16px; font-weight: bold; }
         .stat-lbl { font-size: 8px; color: #8b949e; text-transform: uppercase; }
-        .legend-item { display: flex; align-items: center; justify-content: space-between; font-size: 10px; margin-bottom: 4px; }
-        .color-dot { width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; }
+        .color-dot { width: 12px; height: 12px; border-radius: 3px; margin-right: 8px; border: 1px solid rgba(255,255,255,0.1); }
         .sobra-pill { font-weight: bold; background: var(--toggle-bg); padding: 1px 6px; border-radius: 8px; font-size: 9px; }
         .period-item { font-size: 10px; padding: 6px; background: var(--stat-bg); border: 1px solid var(--border); border-radius: 4px; margin-bottom: 4px; border-left: 3px solid var(--blue); }
     </style>
@@ -90,7 +95,7 @@
         <button class="btn-save" id="btnSave">Guardar Alterações</button>
         <button class="btn-pdf" id="btnExport">Gerar PDF</button>
         <div id="status" style="font-size:11px; text-align:center; color: var(--green); margin: 4px 0;"></div>
-        <div style="font-size:9px; color:#8b949e; margin: 10px 0 5px 0; text-transform: uppercase; font-weight: bold; border-bottom: 1px solid var(--border);">Sobra Equipa:</div>
+        <div style="font-size:9px; color:#8b949e; margin: 10px 0 5px 0; text-transform: uppercase; font-weight: bold; border-bottom: 1px solid var(--border);">Filtros Equipa (clique):</div>
         <div id="legend"></div>
         <div style="font-size:9px; color:#8b949e; margin: 15px 0 5px 0; text-transform: uppercase; font-weight: bold; border-bottom: 1px solid var(--border);">Meus Períodos:</div>
         <div id="periodList"></div>
@@ -120,6 +125,8 @@
     const provider = new GoogleAuthProvider();
 
     let membros = {}; let todasFerias = {}; let userEmailEncoded = ""; let minhasFerias = [];
+    let membrosVisiveis = {}; // Estado local para os filtros
+
     const FERIADOS = ["2026-01-01", "2026-04-03", "2026-04-05", "2026-04-25", "2026-05-01", "2026-06-04", "2026-06-10", "2026-08-15", "2026-10-05", "2026-11-01", "2026-12-01", "2026-12-08", "2026-12-25"];
 
     const themeBtn = document.getElementById('themeToggle');
@@ -160,9 +167,21 @@
         const snap = await get(ref(db, 'membros/' + userEmailEncoded));
         if (snap.exists()) {
             document.getElementById('userInfo').innerText = "👤 " + snap.val().nome;
-            onValue(ref(db, 'membros'), s => { membros = s.val() || {}; render(); });
+            onValue(ref(db, 'membros'), s => { 
+                membros = s.val() || {}; 
+                // Inicializa visibilidade se for a primeira vez
+                Object.keys(membros).forEach(email => {
+                    if (membrosVisiveis[email] === undefined) membrosVisiveis[email] = true;
+                });
+                render(); 
+            });
             onValue(ref(db, 'equipa'), s => { todasFerias = s.val() || {}; minhasFerias = todasFerias[userEmailEncoded] || []; render(); });
         } else { signOut(auth); }
+    }
+
+    function toggleFiltro(email) {
+        membrosVisiveis[email] = !membrosVisiveis[email];
+        render();
     }
 
     function render() {
@@ -177,7 +196,13 @@
         Object.entries(membros).forEach(([email, m]) => {
             const f = todasFerias[email] || [];
             const sobra = (m.totalDias || 22) - f.filter(d => isDiaUtil(d)).length;
-            leg.innerHTML += `<div class="legend-item"><div><div class="color-dot" style="display:inline-block;background:${m.cor}"></div> ${m.nome}</div><span class="sobra-pill">${sobra}</span></div>`;
+            const isHidden = !membrosVisiveis[email];
+            
+            const item = document.createElement('div');
+            item.className = `legend-item ${isHidden ? 'hidden' : ''}`;
+            item.innerHTML = `<div><div class="color-dot" style="display:inline-block;background:${m.cor}"></div> ${m.nome}</div><span class="sobra-pill">${sobra}</span>`;
+            item.onclick = () => toggleFiltro(email);
+            leg.appendChild(item);
         });
 
         document.getElementById('periodList').innerHTML = formatarPeriodos(minhasFerias);
@@ -198,24 +223,21 @@
                 const isFeriado = FERIADOS.includes(dStr);
                 const isFimSemana = (d.getDay() === 0 || d.getDay() === 6);
                 
-                // Aplicar classes de texto apenas
                 if (isFeriado) cell.classList.add('holiday-text');
                 else if (isFimSemana) cell.classList.add('weekend-text');
 
-                // Lógica de Cores Combinadas (Feriado/FDS + Utilizadores)
-                let usersInDay = Object.keys(todasFerias).filter(e => todasFerias[e]?.includes(dStr));
+                // Lógica de Cores FILTRADA
                 let coresAMostrar = [];
-
-                usersInDay.forEach(u => {
-                    if (membros[u]?.cor) coresAMostrar.push(membros[u].cor);
+                Object.keys(todasFerias).forEach(email => {
+                    if (membrosVisiveis[email] && todasFerias[email]?.includes(dStr)) {
+                        if (membros[email]?.cor) coresAMostrar.push(membros[email].cor);
+                    }
                 });
 
-                // SE houver pessoas de férias, o fundo é o gradiente
                 if (coresAMostrar.length > 0) {
                     if (coresAMostrar.length === 1) {
                         cell.style.background = coresAMostrar[0];
                     } else {
-                        // Gradiente linear exato 135deg para dividir fatias
                         let grad = "linear-gradient(135deg, ";
                         let step = 100 / coresAMostrar.length;
                         coresAMostrar.forEach((cor, i) => {
@@ -226,8 +248,8 @@
                     }
                     cell.style.color = 'white';
                 } else {
-                    // Se ninguém está de férias, o fundo é o padrão (transparente/card)
                     cell.style.background = "";
+                    cell.style.color = ""; // Volta à cor original (laranja/vermelho/text)
                 }
 
                 cell.onclick = () => {
