@@ -47,10 +47,13 @@
         .stat-val { display: block; font-size: 18px; font-weight: bold; }
         .stat-lbl { font-size: 9px; color: #8b949e; text-transform: uppercase; }
 
-        .legend-item { display: flex; align-items: center; justify-content: space-between; font-size: 11px; margin-bottom: 5px; padding: 4px; border-radius: 4px; }
+        .legend-item { display: flex; align-items: center; justify-content: space-between; font-size: 11px; margin-bottom: 5px; padding: 4px; }
         .legend-name { display: flex; align-items: center; gap: 8px; }
         .color-dot { width: 10px; height: 10px; border-radius: 2px; }
         .sobra-pill { font-weight: bold; background: var(--toggle-bg); padding: 2px 6px; border-radius: 10px; font-size: 10px; }
+
+        .pdf-export { background: white !important; color: black !important; }
+        .pdf-export table { background: white !important; border-color: #ccc !important; }
     </style>
 </head>
 <body data-theme="light">
@@ -78,7 +81,7 @@
             <button class="btn-pdf" id="btnExport">📄 PDF</button>
             <div id="status" style="font-size:11px; text-align:center; height:15px; margin:5px 0; color: var(--green); font-weight: bold;"></div>
             <hr style="border:0; border-top:1px solid var(--border); margin: 15px 0;">
-            <div style="font-size: 10px; color: #8b949e; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">Sobra da Equipa:</div>
+            <div style="font-size: 9px; color: #8b949e; margin-bottom: 8px; text-transform: uppercase;">Sobra da Equipa:</div>
             <div id="legend"></div>
         </div>
     </div>
@@ -109,8 +112,6 @@
     const provider = new GoogleAuthProvider();
 
     let membros = {}; let todasFerias = {}; let userEmailEncoded = ""; let minhasFerias = [];
-    
-    // 04-06 (Corpo de Deus) adicionado
     const FERIADOS = ["2026-01-01", "2026-04-03", "2026-04-25", "2026-05-01", "2026-06-04", "2026-06-10", "2026-08-15", "2026-10-05", "2026-11-01", "2026-12-01", "2026-12-08", "2026-12-25"];
 
     const updateTheme = (t) => { document.body.setAttribute('data-theme', t); localStorage.setItem('theme', t); document.getElementById('themeToggle').innerText = t === 'dark' ? '☀️' : '🌙'; };
@@ -121,7 +122,7 @@
         const parts = dStr.split('-');
         const d = new Date(parts[0], parts[1] - 1, parts[2]);
         const dw = d.getDay(); 
-        return dw !== 0 && dw dw !== 6 && !FERIADOS.includes(dStr);
+        return dw !== 0 && dw !== 6 && !FERIADOS.includes(dStr);
     }
 
     async function checkAccess(user) {
@@ -134,7 +135,6 @@
             document.getElementById('userInfo').innerText = "👤 " + snap.val().nome;
             onValue(ref(db, 'membros'), (s) => { 
                 membros = s.val() || {}; 
-                // Correção do nome Inês no objeto local
                 Object.keys(membros).forEach(k => { if(membros[k].nome === "Ines") membros[k].nome = "Inês"; });
                 render(); 
             });
@@ -146,20 +146,12 @@
         const table = document.getElementById('calendar');
         table.innerHTML = "<tr><th>Mês</th>" + Array.from({length: 37}, (_, i) => `<th>${['S','T','Q','Q','S','S','D'][i % 7]}</th>`).join('') + "</tr>";
         
-        // Renderizar Legenda com Cálculo de Sobra
         const leg = document.getElementById('legend');
         leg.innerHTML = "";
         Object.entries(membros).forEach(([email, m]) => {
-            const diasGastos = (todasFerias[email] || []).filter(d => isDiaUtil(d)).length;
-            const sobra = (m.totalDias || 22) - diasGastos;
-            leg.innerHTML += `
-                <div class="legend-item">
-                    <div class="legend-name">
-                        <div class="color-dot" style="background:${m.cor}"></div>
-                        <span>${m.nome}</span>
-                    </div>
-                    <span class="sobra-pill">${sobra}</span>
-                </div>`;
+            const gastos = (todasFerias[email] || []).filter(d => isDiaUtil(d)).length;
+            const sobra = (m.totalDias || 22) - gastos;
+            leg.innerHTML += `<div class="legend-item"><div class="legend-name"><div class="color-dot" style="background:${m.cor}"></div><span>${m.nome}</span></div><span class="sobra-pill">${sobra}</span></div>`;
         });
 
         let uteisGastos = 0;
