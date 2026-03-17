@@ -113,12 +113,13 @@
     updateTheme(localStorage.getItem('theme') || 'light');
     document.getElementById('themeToggle').onclick = () => updateTheme(document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
 
-    // Função corrigida para lidar com datas de forma absoluta
+    // Lógica de dia útil sem falhas (usa strings de data locais)
     function isDiaUtil(dStr) {
-        const [year, month, day] = dStr.split('-').map(Number);
-        const d = new Date(year, month - 1, day);
-        const dayOfWeek = d.getDay(); 
-        return dayOfWeek !== 0 && dayOfWeek !== 6 && !FERIADOS.includes(dStr);
+        const parts = dStr.split('-');
+        const d = new Date(parts[0], parts[1] - 1, parts[2]);
+        const dw = d.getDay(); 
+        // 0 é Domingo, 6 é Sábado. Se dw for entre 1 e 5 e não for feriado, é útil.
+        return dw !== 0 && dw !== 6 && !FERIADOS.includes(dStr);
     }
 
     async function checkAccess(user) {
@@ -144,31 +145,40 @@
             leg.innerHTML += `<div style="display:flex;align-items:center;gap:5px;font-size:11px;margin-bottom:3px;"><div style="width:10px;height:10px;background:${m.cor};border-radius:2px;"></div>${m.nome}</div>`;
         });
 
+        // Contagem rigorosa
         let uteisGastos = 0;
-        minhasFerias.forEach(d => { if(isDiaUtil(d)) uteisGastos++; });
+        minhasFerias.forEach(diaStr => {
+            if(isDiaUtil(diaStr)) uteisGastos++;
+        });
 
         const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
         meses.forEach((nome, mIdx) => {
             let row = table.insertRow();
             row.insertCell().className = 'month-name'; row.cells[0].innerText = nome;
+            
             let d = new Date(2026, mIdx, 1);
             let offset = d.getDay() === 0 ? 6 : d.getDay() - 1;
             for(let i=0; i<offset; i++) row.insertCell();
             
             while(d.getMonth() === mIdx) {
                 let cell = row.insertCell(); 
-                let dStr = `2026-${String(mIdx + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-                cell.innerText = d.getDate(); cell.className = 'day';
+                // Gerar string local para evitar problemas de UTC
+                let dayNum = d.getDate();
+                let dStr = `2026-${String(mIdx + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
                 
+                cell.innerText = dayNum; cell.className = 'day';
+                
+                const dw = d.getDay();
                 if (FERIADOS.includes(dStr)) cell.classList.add('holiday');
-                else if (d.getDay() === 0 || d.getDay() === 6) cell.classList.add('weekend');
+                else if (dw === 0 || dw === 6) cell.classList.add('weekend');
 
-                let users = Object.keys(todasFerias).filter(e => todasFerias[e]?.includes(dStr));
-                if (users.length >= 1) {
-                    if (users.length === 1) {
-                        cell.style.backgroundColor = membros[users[0]].cor;
+                // Pintar Seleções
+                let usersComFerias = Object.keys(todasFerias).filter(e => todasFerias[e]?.includes(dStr));
+                if (usersComFerias.length > 0) {
+                    if (usersComFerias.length === 1) {
+                        cell.style.backgroundColor = membros[usersComFerias[0]].cor;
                     } else {
-                        cell.style.background = `linear-gradient(135deg, ${membros[users[0]].cor} 50%, ${membros[users[1]].cor} 50%)`;
+                        cell.style.background = `linear-gradient(135deg, ${membros[usersComFerias[0]].cor} 50%, ${membros[usersComFerias[1]].cor} 50%)`;
                     }
                     cell.style.color = 'white';
                 } else {
@@ -179,8 +189,10 @@
                     if (minhasFerias.includes(dStr)) {
                         minhasFerias = minhasFerias.filter(v => v !== dStr);
                     } else {
-                        if (isDiaUtil(dStr) && uteisGastos >= (membros[userEmailEncoded]?.totalDias || 22)) {
-                            alert("Plafond esgotado!"); return;
+                        // Se for dia útil, valida o plafond
+                        if (isDiaUtil(dStr)) {
+                            const max = membros[userEmailEncoded]?.totalDias || 22;
+                            if (uteisGastos >= max) { alert("Limite de dias úteis atingido!"); return; }
                         }
                         minhasFerias.push(dStr);
                     }
@@ -192,10 +204,10 @@
             while(row.cells.length < 38) row.insertCell();
         });
 
-        const total = membros[userEmailEncoded]?.totalDias || 22;
-        document.getElementById('statTotal').innerText = total;
+        const plafond = membros[userEmailEncoded]?.totalDias || 22;
+        document.getElementById('statTotal').innerText = plafond;
         document.getElementById('statUsed').innerText = uteisGastos;
-        document.getElementById('statLeft').innerText = total - uteisGastos;
+        document.getElementById('statLeft').innerText = plafond - uteisGastos;
     }
 
     document.getElementById('btnInc').onclick = () => ajustarDias(1);
