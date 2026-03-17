@@ -22,40 +22,66 @@
 
         body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); display: flex; margin: 0; height: 100vh; overflow: hidden; }
         
-        /* Overlay de Login */
-        #loginOverlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg); display: flex; flex-direction: column;
-            align-items: center; justify-content: center; z-index: 1000;
-            display: none; /* Escondido por padrão */
-        }
-
         .sidebar { 
             width: 260px; min-width: 260px; 
             background: var(--card); padding: 15px; border-right: 1px solid var(--border); 
             display: flex; flex-direction: column; box-sizing: border-box; overflow-y: auto; 
         }
 
-        .sidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px; }
+        .sidebar-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 20px; 
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
         .header-actions { display: flex; gap: 8px; }
 
-        .top-btn { 
+        .main { 
+            flex-grow: 1; 
+            padding: 10px; 
+            overflow: auto; 
+            display: flex; 
+            align-items: flex-start; 
+            justify-content: center; 
+        }
+
+        /* Botões Circulares do Topo */
+        .theme-toggle, .btn-logout-top { 
             background: var(--toggle-bg); border: 1px solid var(--border); 
             width: 32px; height: 32px; border-radius: 50%; cursor: pointer; 
             color: var(--text); display: flex; align-items: center; justify-content: center;
-            font-size: 14px; transition: 0.2s; padding: 0;
+            font-size: 16px; transition: 0.2s;
         }
-        .top-btn:hover { background: var(--border); }
-
-        .main { flex-grow: 1; padding: 10px; overflow: auto; display: flex; align-items: flex-start; justify-content: center; }
+        
+        .btn-logout-top:hover { color: var(--red); border-color: var(--red); }
         
         button { cursor: pointer; border-radius: 6px; border: none; padding: 8px; width: 100%; font-weight: bold; margin-bottom: 6px; font-size: 13px; }
         .btn-save { background: var(--green); color: white; }
         .btn-pdf { background: #8250df; color: white; }
-        .btn-login { background: var(--blue); color: white; width: 200px; padding: 12px; font-size: 16px; }
 
-        table { border-collapse: collapse; background: var(--card); font-size: 11px; color: var(--text); box-shadow: 0 4px 15px rgba(0,0,0,0.3); table-layout: fixed; }
-        th, td { border: 1px solid var(--border); width: 26px; height: 26px; text-align: center; padding: 0; line-height: 26px; }
+        /* Tabela */
+        table { 
+            border-collapse: collapse; 
+            background: var(--card); 
+            font-size: 11px; 
+            color: var(--text); 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            table-layout: fixed;
+            width: auto;
+        }
+        
+        th, td { 
+            border: 1px solid var(--border); 
+            width: 26px; 
+            height: 26px;
+            text-align: center; 
+            padding: 0;
+            line-height: 26px;
+        }
+
         th { font-size: 9px; color: #8b949e; font-weight: normal; }
         .month-name { background: rgba(128, 128, 128, 0.1); text-align: left; padding-left: 8px; font-weight: bold; width: 60px; }
         .day { cursor: pointer; transition: 0.1s; }
@@ -63,37 +89,30 @@
         .weekend { color: var(--orange) !important; font-weight: bold; background: rgba(255, 255, 255, 0.02); }
         .holiday { color: var(--red) !important; font-weight: bold; }
 
+        /* Stats e Legenda */
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; margin-bottom: 12px; }
         .stat-box { background: var(--stat-bg); padding: 5px; border-radius: 6px; border: 1px solid var(--border); text-align: center; }
         .stat-val { display: block; font-size: 16px; font-weight: bold; }
         .stat-lbl { font-size: 8px; color: #8b949e; text-transform: uppercase; }
-
         .legend-item { display: flex; align-items: center; justify-content: space-between; font-size: 10px; margin-bottom: 4px; }
         .color-dot { width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; }
         .sobra-pill { font-weight: bold; background: var(--toggle-bg); padding: 1px 6px; border-radius: 8px; font-size: 9px; }
-
-        .period-list { margin-top: 10px; }
         .period-item { font-size: 10px; padding: 6px; background: var(--stat-bg); border: 1px solid var(--border); border-radius: 4px; margin-bottom: 4px; border-left: 3px solid var(--blue); }
     </style>
 </head>
 <body data-theme="dark">
 
-<div id="loginOverlay">
-    <h1 style="margin-bottom: 20px;">🏖️ Férias Equipa 2026</h1>
-    <button class="btn-login" id="btnLoginAction">Entrar com Google</button>
-</div>
-
 <div class="sidebar">
     <div class="sidebar-header">
-        <h2 style="margin:0; font-size: 1.1em; flex-grow: 1;">🏖️ Equipa 2026</h2>
+        <h2 style="margin:0; font-size: 1.1em;">🏖️ 2026</h2>
         <div class="header-actions">
-            <button id="themeToggle" class="top-btn" title="Alternar Tema">☀️</button>
-            <button id="btnLogout" class="top-btn" title="Sair">⏻</button>
+            <button id="themeToggle" class="theme-toggle" title="Mudar Tema">☀️</button>
+            <button id="btnLogout" class="btn-logout-top" title="Sair">⏻</button>
         </div>
     </div>
     
     <div id="userArea">
-        <div id="userInfo" style="font-weight:bold; margin-bottom:10px; font-size: 16px; color: var(--blue);">A carregar...</div>
+        <div id="userInfo" style="font-weight:bold; margin-bottom:10px; font-size: 15px; color: var(--blue);">A carregar...</div>
         <div class="stats-grid">
             <div class="stat-box">
                 <span id="statTotal" class="stat-val">-</span><span class="stat-lbl">Plafond</span>
@@ -113,7 +132,7 @@
         <div id="legend"></div>
         
         <div style="font-size:9px; color:#8b949e; margin: 15px 0 5px 0; text-transform: uppercase; font-weight: bold; border-bottom: 1px solid var(--border);">Meus Períodos:</div>
-        <div id="periodList" class="period-list"></div>
+        <div id="periodList"></div>
     </div>
 </div>
 
@@ -126,6 +145,7 @@
     import { getDatabase, ref, set, onValue, get, update } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
+    // ATENÇÃO: Se fores publicar no GitHub, remove a apiKey daqui e usa variáveis de ambiente!
     const firebaseConfig = {
         apiKey: "AIzaSyA9V2yj_wYiR9o6G-jv-9oxH2Roxb91RPQ",
         authDomain: "vacations-f36d6.firebaseapp.com",
@@ -142,7 +162,7 @@
     let membros = {}; let todasFerias = {}; let userEmailEncoded = ""; let minhasFerias = [];
     const FERIADOS = ["2026-01-01", "2026-04-03", "2026-04-05", "2026-04-25", "2026-05-01", "2026-06-04", "2026-06-10", "2026-08-15", "2026-10-05", "2026-11-01", "2026-12-01", "2026-12-08", "2026-12-25"];
 
-    // Controle do Tema
+    // Lógica do Tema
     const themeBtn = document.getElementById('themeToggle');
     themeBtn.onclick = () => {
         const current = document.body.getAttribute('data-theme');
@@ -176,24 +196,6 @@
         return periodos.map(p => `<div class="period-item">${p}</div>`).join('');
     }
 
-    // Autenticação e Login
-    onAuthStateChanged(auth, user => {
-        if (user) {
-            document.getElementById('loginOverlay').style.display = 'none';
-            checkAccess(user);
-        } else {
-            document.getElementById('loginOverlay').style.display = 'flex';
-        }
-    });
-
-    document.getElementById('btnLoginAction').onclick = () => {
-        signInWithPopup(auth, provider).catch(err => console.error("Erro no login:", err));
-    };
-
-    document.getElementById('btnLogout').onclick = () => {
-        signOut(auth).catch(err => console.error("Erro no logout:", err));
-    };
-
     async function checkAccess(user) {
         userEmailEncoded = user.email.replace(/\./g, '_');
         const snap = await get(ref(db, 'membros/' + userEmailEncoded));
@@ -201,10 +203,7 @@
             document.getElementById('userInfo').innerText = "👤 " + snap.val().nome;
             onValue(ref(db, 'membros'), s => { membros = s.val() || {}; render(); });
             onValue(ref(db, 'equipa'), s => { todasFerias = s.val() || {}; minhasFerias = todasFerias[userEmailEncoded] || []; render(); });
-        } else { 
-            alert("Acesso negado. Email não autorizado.");
-            signOut(auth); 
-        }
+        } else { signOut(auth); }
     }
 
     function render() {
@@ -285,6 +284,9 @@
         const element = document.getElementById('calendar-area');
         html2pdf().set({ margin: 5, filename: 'Ferias_2026.pdf', jsPDF: { orientation: 'landscape' } }).from(element).save();
     };
+
+    onAuthStateChanged(auth, u => u ? checkAccess(u) : signInWithPopup(auth, provider));
+    document.getElementById('btnLogout').onclick = () => signOut(auth).then(() => location.reload());
 </script>
 </body>
 </html>
