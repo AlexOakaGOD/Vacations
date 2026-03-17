@@ -14,78 +14,88 @@
             --bg: #0d1117; --card: #161b22; --text: #c9d1d9; --border: #30363d;
         }
 
-        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); display: flex; margin: 0; height: 100vh; overflow: hidden; }
-        
-        /* BARRA LATERAL FIXA - RESOLVE O "QUEBRADO" */
+        /* RESET TOTAL PARA EVITAR CONFLITOS */
+        * { box-sizing: border-box; }
+        body, html { margin: 0; padding: 0; height: 100vh; width: 100vw; overflow: hidden; font-family: sans-serif; background: var(--bg); color: var(--text); }
+
+        /* BARRA LATERAL - POSIÇÃO FIXA E INABALÁVEL */
         .sidebar { 
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
             width: 320px; 
-            min-width: 320px; 
             background: var(--card); 
-            padding: 20px; 
             border-right: 1px solid var(--border); 
-            display: flex; 
-            flex-direction: column; 
-            overflow-y: auto; /* Scroll apenas na barra se o conteúdo for longo */
-            position: relative; 
-            box-sizing: border-box; 
-            z-index: 10;
+            padding: 20px;
+            overflow-y: auto;
+            z-index: 1000;
         }
 
-        /* ÁREA DO CALENDÁRIO COM SCROLL HORIZONTAL */
+        /* ÁREA PRINCIPAL - COMEÇA DEPOIS DA SIDEBAR */
         .main { 
-            flex-grow: 1; 
-            padding: 20px; 
-            overflow: auto; /* Permite scroll vertical e horizontal */
+            position: absolute;
+            top: 0;
+            left: 320px;
+            right: 0;
+            bottom: 0;
+            padding: 20px;
+            overflow: auto; /* Scroll horizontal e vertical aqui */
             background: var(--bg);
         }
+
+        /* TABELA - FORÇADA A NÃO ENCOLHER */
+        table { 
+            border-collapse: collapse; 
+            min-width: 1200px; /* Garante que os dias não ficam minúsculos */
+            background: var(--card); 
+            font-size: 11px;
+            table-layout: fixed;
+        }
         
-        .theme-toggle { position: absolute; top: 15px; right: 15px; width: 30px; height: 30px; border-radius: 6px; cursor: pointer; border: 1px solid var(--border); background: var(--bg); display: flex; align-items: center; justify-content: center; }
-        
-        table { border-collapse: collapse; min-width: 1000px; background: var(--card); font-size: 11px; table-layout: fixed; }
         th, td { border: 1px solid var(--border); height: 35px; text-align: center; position: relative; }
         .month-name { font-weight: bold; text-align: left; padding-left: 10px; width: 100px; background: rgba(128,128,128,0.1); }
         
-        .day { cursor: pointer; }
-        .weekend { background: rgba(154, 103, 0, 0.05); color: var(--orange); }
-        .holiday { background: rgba(207, 34, 46, 0.05); color: var(--red); font-weight: bold; }
+        .theme-toggle { position: absolute; top: 15px; right: 15px; width: 30px; height: 30px; border-radius: 6px; cursor: pointer; border: 1px solid var(--border); background: var(--bg); display: flex; align-items: center; justify-content: center; }
         
-        .dot::after { content: ""; position: absolute; top: 4px; right: 4px; width: 5px; height: 5px; background: white; border-radius: 50%; box-shadow: 0 0 2px black; z-index: 10; }
-
+        /* ESTILOS DE STATUS E BOTÕES */
         .stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin: 15px 0; }
         .stat-box { background: var(--bg); border: 1px solid var(--border); padding: 8px; border-radius: 6px; text-align: center; }
         .stat-val { display: block; font-size: 16px; font-weight: bold; }
         .stat-lbl { font-size: 8px; color: #8b949e; text-transform: uppercase; }
 
-        .interval-tag { font-size: 10px; padding: 8px; background: var(--bg); border: 1px solid var(--border); border-left: 4px solid var(--blue); border-radius: 4px; margin-bottom: 6px; line-height: 1.4; }
+        .interval-tag { font-size: 10px; padding: 8px; background: var(--bg); border: 1px solid var(--border); border-left: 4px solid var(--blue); border-radius: 4px; margin-bottom: 6px; }
         
-        button { cursor: pointer; border-radius: 6px; border: none; padding: 10px; font-weight: bold; transition: opacity 0.2s; }
-        button:hover { opacity: 0.8; }
-        .btn-save { background: var(--green); color: white; width: 100%; margin-bottom: 10px; }
-        .btn-pdf { background: #8250df; color: white; width: 100%; }
-        .btn-google { background: #24292f; color: white; width: 100%; }
-        
-        hr { border: 0; border-top: 1px solid var(--border); margin: 20px 0; }
+        button { cursor: pointer; border-radius: 6px; border: none; padding: 10px; font-weight: bold; width: 100%; }
+        .btn-save { background: var(--green); color: white; margin-bottom: 10px; }
+        .btn-pdf { background: #8250df; color: white; }
+        .btn-google { background: #24292f; color: white; }
+
+        .day { cursor: pointer; }
+        .weekend { background: rgba(154, 103, 0, 0.05); color: var(--orange); }
+        .holiday { background: rgba(207, 34, 46, 0.05); color: var(--red); font-weight: bold; }
+        .dot::after { content: ""; position: absolute; top: 4px; right: 4px; width: 5px; height: 5px; background: white; border-radius: 50%; box-shadow: 0 0 2px black; z-index: 10; }
     </style>
 </head>
 <body data-theme="light">
 
 <div class="sidebar">
     <div id="themeToggle" class="theme-toggle">🌙</div>
-    <h2 style="margin-top:0; font-size: 20px;">Férias 2026</h2>
+    <h2 style="margin-top:0">Férias 2026</h2>
     
     <div id="loginArea">
         <button class="btn-google" id="btnLogin">Entrar com Google</button>
     </div>
     
     <div id="userArea" style="display:none">
-        <div id="userName" style="font-weight:bold; margin-bottom:10px; font-size: 15px;"></div>
+        <div id="userName" style="font-weight:bold; margin-bottom:10px;"></div>
         
         <div class="stats">
             <div class="stat-box">
                 <span id="sTotal" class="stat-val">22</span><span class="stat-lbl">Plafond</span>
                 <div style="display:flex; justify-content:center; gap:5px; margin-top:5px;">
-                    <button id="btnDec" style="padding:2px 6px; background:var(--border);">-</button>
-                    <button id="btnInc" style="padding:2px 6px; background:var(--border);">+</button>
+                    <button id="btnDec" style="width:22px; height:22px; padding:0; background:var(--border);">-</button>
+                    <button id="btnInc" style="width:22px; height:22px; padding:0; background:var(--border);">+</button>
                 </div>
             </div>
             <div class="stat-box"><span id="sUsed" class="stat-val">0</span><span class="stat-lbl">Gastos</span></div>
@@ -94,15 +104,13 @@
 
         <button class="btn-save" id="btnSave">Guardar Alterações</button>
         <button class="btn-pdf" id="btnExport">Gerar PDF</button>
-        <div id="msg" style="color:var(--green); font-size:12px; text-align:center; margin-top:8px; font-weight: bold;"></div>
+        <div id="msg" style="color:var(--green); font-size:12px; text-align:center; margin-top:10px;"></div>
         
-        <hr>
-        
-        <div style="font-size:10px; color:#8b949e; font-weight:bold; margin-bottom:10px; text-transform:uppercase;">Sobra da Equipa:</div>
+        <hr style="border:0; border-top:1px solid var(--border); margin: 20px 0;">
+        <div style="font-size:10px; color:#8b949e; font-weight:bold; margin-bottom:10px; text-transform:uppercase;">Equipa:</div>
         <div id="legendArea"></div>
         
-        <hr>
-        
+        <hr style="border:0; border-top:1px solid var(--border); margin: 20px 0;">
         <div style="font-size:10px; color:#8b949e; font-weight:bold; margin-bottom:10px; text-transform:uppercase;">Os Meus Períodos:</div>
         <div id="intervalList"></div>
     </div>
@@ -227,16 +235,12 @@
         });
     }
 
-    // Botões e Eventos
+    // Botões
     document.getElementById('btnLogin').onclick = () => signInWithPopup(auth, provider);
     document.getElementById('btnSave').onclick = async () => {
         await set(ref(db, 'equipa/' + myEmail), myDates);
         document.getElementById('msg').innerText = "✅ Guardado!";
         setTimeout(() => document.getElementById('msg').innerText = "", 3000);
-    };
-    document.getElementById('btnExport').onclick = () => {
-        const element = document.getElementById('calendar');
-        html2pdf().from(element).set({ margin: 10, filename: 'Ferias_2026.pdf', jsPDF: { orientation: 'landscape' } }).save();
     };
     document.getElementById('btnInc').onclick = () => changePlafond(1);
     document.getElementById('btnDec').onclick = () => changePlafond(-1);
