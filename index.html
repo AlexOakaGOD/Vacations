@@ -3,43 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calendário de Equipa 2026</title>
+    <title>Férias Equipa 2026</title>
     <style>
-        :root { --bg: #0d1117; --card: #161b22; --text: #c9d1d9; }
-        body { font-family: sans-serif; background: var(--bg); color: var(--text); display: flex; margin: 0; height: 100vh; }
-        .sidebar { width: 300px; background: var(--card); padding: 20px; border-right: 1px solid #30363d; overflow-y: auto; }
-        .main { flex-grow: 1; padding: 20px; overflow-y: auto; }
-        
-        button { cursor: pointer; border-radius: 6px; border: none; padding: 12px; width: 100%; font-weight: bold; margin-bottom: 10px; }
-        .btn-google { background: white; color: #444; }
-        .btn-save { background: #238636; color: white; }
-        
-        table { border-collapse: collapse; width: 100%; background: var(--card); }
-        td, th { border: 1px solid #30363d; height: 35px; text-align: center; font-size: 11px; position: relative; }
-        .month-name { background: #21262d; text-align: left; padding-left: 10px; width: 100px; }
-        
-        /* Cores dinâmicas serão aplicadas via JS */
+        :root { --bg: #0d1117; --card: #161b22; --text: #c9d1d9; --blue: #1f6feb; --green: #238636; --red: #f85149; --orange: #e3b341; }
+        body { font-family: sans-serif; background: var(--bg); color: var(--text); display: flex; margin: 0; height: 100vh; overflow: hidden; }
+        .sidebar { width: 300px; background: var(--card); padding: 20px; border-right: 1px solid #30363d; display: flex; flex-direction: column; }
+        .main { flex-grow: 1; padding: 25px; overflow-y: auto; }
+        button { cursor: pointer; border-radius: 6px; border: none; padding: 12px; width: 100%; font-weight: bold; color: white; margin-bottom: 10px; transition: 0.2s; }
+        .btn-google { background: white; color: #444; border: 1px solid #ddd; }
+        .btn-save { background: var(--green); }
+        .btn-save:hover { filter: brightness(1.2); }
+        table { border-collapse: collapse; width: 100%; background: var(--card); border-radius: 8px; overflow: hidden; }
+        th, td { border: 1px solid #30363d; height: 35px; text-align: center; font-size: 11px; }
+        .month-name { background: #21262d; text-align: left; padding-left: 12px; font-weight: bold; width: 110px; }
         .day { cursor: pointer; transition: 0.1s; }
-        .weekend { background: #2d2400; color: #e3b341; }
-        .holiday { background: #3d1414; color: #f85149; }
-        
+        .weekend { color: var(--orange); background: #2d2400; }
+        .holiday { color: var(--red); background: #3d1414; }
+        #status { font-size: 12px; text-align: center; margin-bottom: 15px; padding: 8px; border-radius: 4px; }
         .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; font-size: 13px; }
-        .color-box { width: 15px; height: 15px; border-radius: 3px; }
+        .color-box { width: 14px; height: 14px; border-radius: 3px; }
     </style>
 </head>
 <body>
 
 <div class="sidebar">
-    <h2>👥 Equipa 2026</h2>
+    <h2 style="margin-top:0">🏖️ Férias 2026</h2>
     <button id="btnLogin" class="btn-google">Entrar com Google</button>
     
     <div id="userArea" style="display:none">
-        <div id="userInfo" style="margin-bottom:20px; font-weight:bold; color:white;"></div>
+        <div id="userInfo" style="margin-bottom:15px; font-weight:bold; font-size: 14px;"></div>
         <button class="btn-save" id="btnSave">☁️ Guardar Minhas Férias</button>
+        <div id="status">Sincronizado</div>
+        <hr style="border:0; border-top:1px solid #333; margin: 15px 0;">
         <div id="legend"></div>
     </div>
-    
-    <div id="status" style="margin-top:10px; font-size:12px; text-align:center;"></div>
+
+    <div style="margin-top: auto; text-align: center;">
+        <div id="count" style="font-size: 48px; font-weight: bold;">0</div>
+        <div style="color: #8b949e; font-size: 12px;">Dias Marcados</div>
+    </div>
 </div>
 
 <div class="main">
@@ -64,8 +66,8 @@
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
 
-    let membros = {}; // Lista de emails autorizados e cores
-    let todasFerias = {}; // { "email_encoded": ["2026-01-01", ...] }
+    let membros = {}; 
+    let todasFerias = {}; 
     let userEmailEncoded = "";
     let minhasFerias = [];
 
@@ -76,31 +78,32 @@
     async function checkAccess(user) {
         const encoded = encodeEmail(user.email);
         const snap = await get(ref(db, 'membros/' + encoded));
+        
         if (snap.exists()) {
-            membros = (await get(ref(db, 'membros'))).val();
+            const allMembrosSnap = await get(ref(db, 'membros'));
+            membros = allMembrosSnap.val();
             userEmailEncoded = encoded;
+            
             document.getElementById('userArea').style.display = 'block';
             document.getElementById('btnLogin').style.display = 'none';
-            document.getElementById('userInfo').innerText = "Olá, " + snap.val().nome;
-            setupSync();
+            document.getElementById('userInfo').innerText = "👤 " + snap.val().nome;
+            
+            // Ouvir base de dados em tempo real
+            onValue(ref(db, 'equipa'), (snapshot) => {
+                todasFerias = snapshot.val() || {};
+                minhasFerias = todasFerias[userEmailEncoded] || [];
+                render();
+            });
             renderLegend();
         } else {
-            alert("Acesso negado. O teu e-mail não está na base de dados.");
+            alert("Acesso negado: " + user.email + " não está na lista de membros.");
             auth.signOut();
         }
     }
 
-    function setupSync() {
-        onValue(ref(db, 'equipa'), (snapshot) => {
-            todasFerias = snapshot.val() || {};
-            minhasFerias = todasFerias[userEmailEncoded] || [];
-            render();
-        });
-    }
-
     function renderLegend() {
         const legend = document.getElementById('legend');
-        legend.innerHTML = "<h4>Legenda:</h4>";
+        legend.innerHTML = "<p style='font-size:12px; color:#8b949e'>Equipa:</p>";
         Object.entries(membros).forEach(([email, dados]) => {
             legend.innerHTML += `<div class="legend-item"><div class="color-box" style="background:${dados.cor}"></div> ${dados.nome}</div>`;
         });
@@ -127,34 +130,43 @@
                 if (FERIADOS.includes(dStr)) cell.classList.add('holiday');
                 else if (d.getDay() === 0 || d.getDay() === 6) cell.classList.add('weekend');
 
-                // Pintar dias de todos
+                // Aplicar cores de quem marcou
                 Object.entries(todasFerias).forEach(([email, datas]) => {
-                    if (datas.includes(dStr)) {
+                    if (datas && datas.includes(dStr)) {
                         cell.style.background = membros[email]?.cor || '#333';
                         cell.style.color = 'white';
-                        cell.style.fontWeight = 'bold';
                     }
                 });
 
                 cell.onclick = () => {
-                    if (minhasFerias.includes(dStr)) minhasFerias = minhasFerias.filter(v => v !== dStr);
-                    else minhasFerias.push(dStr);
+                    if (minhasFerias.includes(dStr)) {
+                        minhasFerias = minhasFerias.filter(v => v !== dStr);
+                    } else {
+                        minhasFerias.push(dStr);
+                    }
                     todasFerias[userEmailEncoded] = minhasFerias;
+                    document.getElementById('status').innerText = "⚠️ Alterações por guardar";
                     render();
                 };
                 d.setDate(d.getDate() + 1);
             }
+            while(row.cells.length < 38) row.insertCell();
         });
+        document.getElementById('count').innerText = minhasFerias.length;
     }
 
     onAuthStateChanged(auth, (user) => { if (user) checkAccess(user); });
     document.getElementById('btnLogin').onclick = () => signInWithPopup(auth, provider);
+    
     document.getElementById('btnSave').onclick = async () => {
-        await set(ref(db, 'equipa/' + userEmailEncoded), minhasFerias);
-        document.getElementById('status').innerText = "✅ Guardado!";
+        document.getElementById('status').innerText = "⏳ A guardar...";
+        try {
+            await set(ref(db, 'equipa/' + userEmailEncoded), minhasFerias);
+            document.getElementById('status').innerText = "✅ Guardado na Nuvem!";
+        } catch (e) {
+            alert("Erro ao guardar: " + e.message);
+        }
     };
-
-    render();
 </script>
 </body>
 </html>
