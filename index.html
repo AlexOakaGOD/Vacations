@@ -40,7 +40,6 @@
             flex-direction: column; 
             box-sizing: border-box; 
             overflow-y: auto; 
-            z-index: 10;
         }
 
         .sidebar-header { 
@@ -56,11 +55,11 @@
 
         .main { 
             flex-grow: 1; 
-            padding: 20px; 
+            padding: 40px 20px; /* Mais padding no topo para não colar no limite */
             overflow: auto; 
             display: flex; 
-            align-items: center;      /* Centraliza verticalmente */
-            justify-content: center;   /* Centraliza horizontalmente */
+            align-items: flex-start;  /* ALINHA AO TOPO */
+            justify-content: center;   /* CENTRALIZA HORIZONTALMENTE */
             background: var(--bg);
         }
 
@@ -77,16 +76,16 @@
         .btn-save { background: var(--green); color: white; }
         .btn-pdf { background: #8250df; color: white; }
 
-        /* Tabela Centralizada e Fixa */
         table { 
             border-collapse: collapse; 
             background: var(--card); 
             font-size: 11px; 
             color: var(--text); 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
             table-layout: fixed;
-            width: 1050px; /* Largura total calculada para evitar quebras */
+            width: 1050px; 
             min-width: 1050px;
+            margin-bottom: 50px; /* Garante que não cole no fundo ao fazer scroll */
         }
         
         th, td { 
@@ -94,21 +93,20 @@
             width: 26px; 
             min-width: 26px;
             max-width: 26px;
-            height: 26px;
+            height: 28px; /* Ligeiramente mais alto para melhor leitura */
             text-align: center; 
             padding: 0;
-            line-height: 26px;
+            line-height: 28px;
             box-sizing: border-box;
         }
 
-        th { font-size: 9px; color: #8b949e; font-weight: normal; }
-        .month-name { background: rgba(128, 128, 128, 0.1); text-align: left; padding-left: 8px; font-weight: bold; width: 60px; min-width: 60px; }
-        .day { cursor: pointer; transition: 0.1s; }
-        .day:hover { filter: brightness(1.2); }
-        .weekend { color: var(--orange) !important; font-weight: bold; background: rgba(255, 255, 255, 0.02); }
+        th { font-size: 9px; color: #8b949e; font-weight: normal; background: rgba(0,0,0,0.1); }
+        .month-name { background: rgba(128, 128, 128, 0.15); text-align: left; padding-left: 8px; font-weight: bold; width: 60px; min-width: 60px; }
+        .day { cursor: pointer; transition: 0.1s; position: relative; }
+        .day:hover { filter: brightness(1.3); z-index: 2; }
+        .weekend { color: var(--orange) !important; font-weight: bold; background: rgba(255, 255, 255, 0.03); }
         .holiday { color: var(--red) !important; font-weight: bold; }
 
-        /* Stats e Legenda */
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; margin-bottom: 12px; }
         .stat-box { background: var(--stat-bg); padding: 5px; border-radius: 6px; border: 1px solid var(--border); text-align: center; }
         .stat-val { display: block; font-size: 16px; font-weight: bold; }
