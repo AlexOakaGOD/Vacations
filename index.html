@@ -14,14 +14,34 @@
             --bg: #0d1117; --card: #161b22; --text: #c9d1d9; --border: #30363d;
         }
 
-        body { font-family: sans-serif; background: var(--bg); color: var(--text); display: flex; margin: 0; height: 100vh; overflow: hidden; }
+        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); display: flex; margin: 0; height: 100vh; overflow: hidden; }
         
-        .sidebar { width: 320px; background: var(--card); padding: 20px; border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow-y: auto; position: relative; box-sizing: border-box; }
-        .main { flex-grow: 1; padding: 20px; overflow: auto; }
+        /* BARRA LATERAL FIXA - RESOLVE O "QUEBRADO" */
+        .sidebar { 
+            width: 320px; 
+            min-width: 320px; 
+            background: var(--card); 
+            padding: 20px; 
+            border-right: 1px solid var(--border); 
+            display: flex; 
+            flex-direction: column; 
+            overflow-y: auto; /* Scroll apenas na barra se o conteúdo for longo */
+            position: relative; 
+            box-sizing: border-box; 
+            z-index: 10;
+        }
+
+        /* ÁREA DO CALENDÁRIO COM SCROLL HORIZONTAL */
+        .main { 
+            flex-grow: 1; 
+            padding: 20px; 
+            overflow: auto; /* Permite scroll vertical e horizontal */
+            background: var(--bg);
+        }
         
         .theme-toggle { position: absolute; top: 15px; right: 15px; width: 30px; height: 30px; border-radius: 6px; cursor: pointer; border: 1px solid var(--border); background: var(--bg); display: flex; align-items: center; justify-content: center; }
         
-        table { border-collapse: collapse; width: 100%; min-width: 800px; background: var(--card); font-size: 11px; table-layout: fixed; }
+        table { border-collapse: collapse; min-width: 1000px; background: var(--card); font-size: 11px; table-layout: fixed; }
         th, td { border: 1px solid var(--border); height: 35px; text-align: center; position: relative; }
         .month-name { font-weight: bold; text-align: left; padding-left: 10px; width: 100px; background: rgba(128,128,128,0.1); }
         
@@ -29,52 +49,68 @@
         .weekend { background: rgba(154, 103, 0, 0.05); color: var(--orange); }
         .holiday { background: rgba(207, 34, 46, 0.05); color: var(--red); font-weight: bold; }
         
-        /* Ponto indicador para FDS/Feriado quando pintado */
         .dot::after { content: ""; position: absolute; top: 4px; right: 4px; width: 5px; height: 5px; background: white; border-radius: 50%; box-shadow: 0 0 2px black; z-index: 10; }
 
         .stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin: 15px 0; }
         .stat-box { background: var(--bg); border: 1px solid var(--border); padding: 8px; border-radius: 6px; text-align: center; }
         .stat-val { display: block; font-size: 16px; font-weight: bold; }
-        .stat-lbl { font-size: 9px; color: #8b949e; text-transform: uppercase; }
+        .stat-lbl { font-size: 8px; color: #8b949e; text-transform: uppercase; }
 
-        .interval-tag { font-size: 10px; padding: 6px; background: var(--bg); border: 1px solid var(--border); border-left: 4px solid var(--blue); border-radius: 4px; margin-bottom: 6px; }
+        .interval-tag { font-size: 10px; padding: 8px; background: var(--bg); border: 1px solid var(--border); border-left: 4px solid var(--blue); border-radius: 4px; margin-bottom: 6px; line-height: 1.4; }
         
-        button { cursor: pointer; border-radius: 6px; border: none; padding: 10px; font-weight: bold; }
+        button { cursor: pointer; border-radius: 6px; border: none; padding: 10px; font-weight: bold; transition: opacity 0.2s; }
+        button:hover { opacity: 0.8; }
         .btn-save { background: var(--green); color: white; width: 100%; margin-bottom: 10px; }
         .btn-pdf { background: #8250df; color: white; width: 100%; }
+        .btn-google { background: #24292f; color: white; width: 100%; }
+        
+        hr { border: 0; border-top: 1px solid var(--border); margin: 20px 0; }
     </style>
 </head>
 <body data-theme="light">
 
 <div class="sidebar">
     <div id="themeToggle" class="theme-toggle">🌙</div>
-    <h2 style="margin-top:0">Férias 2026</h2>
-    <div id="loginArea"><button onclick="login()" style="width:100%">Entrar com Google</button></div>
+    <h2 style="margin-top:0; font-size: 20px;">Férias 2026</h2>
+    
+    <div id="loginArea">
+        <button class="btn-google" id="btnLogin">Entrar com Google</button>
+    </div>
     
     <div id="userArea" style="display:none">
-        <div id="userName" style="font-weight:bold; margin-bottom:10px;"></div>
+        <div id="userName" style="font-weight:bold; margin-bottom:10px; font-size: 15px;"></div>
+        
         <div class="stats">
-            <div class="stat-box"><span id="sTotal" class="stat-val">22</span><span class="stat-lbl">Plafond</span>
+            <div class="stat-box">
+                <span id="sTotal" class="stat-val">22</span><span class="stat-lbl">Plafond</span>
                 <div style="display:flex; justify-content:center; gap:5px; margin-top:5px;">
-                    <button onclick="changePlafond(-1)" style="padding:2px 6px;">-</button>
-                    <button onclick="changePlafond(1)" style="padding:2px 6px;">+</button>
+                    <button id="btnDec" style="padding:2px 6px; background:var(--border);">-</button>
+                    <button id="btnInc" style="padding:2px 6px; background:var(--border);">+</button>
                 </div>
             </div>
             <div class="stat-box"><span id="sUsed" class="stat-val">0</span><span class="stat-lbl">Gastos</span></div>
             <div class="stat-box"><span id="sLeft" class="stat-val">22</span><span class="stat-lbl">Sobra</span></div>
         </div>
-        <button class="btn-save" onclick="saveData()">Guardar Alterações</button>
-        <button class="btn-pdf" onclick="exportPDF()">Gerar PDF</button>
-        <div id="msg" style="color:var(--green); font-size:12px; text-align:center; margin-top:5px;"></div>
+
+        <button class="btn-save" id="btnSave">Guardar Alterações</button>
+        <button class="btn-pdf" id="btnExport">Gerar PDF</button>
+        <div id="msg" style="color:var(--green); font-size:12px; text-align:center; margin-top:8px; font-weight: bold;"></div>
         
-        <hr style="border:0; border-top:1px solid var(--border); margin: 20px 0;">
+        <hr>
+        
+        <div style="font-size:10px; color:#8b949e; font-weight:bold; margin-bottom:10px; text-transform:uppercase;">Sobra da Equipa:</div>
         <div id="legendArea"></div>
-        <h4 style="font-size:10px; color:#8b949e; text-transform:uppercase;">Os Meus Períodos</h4>
+        
+        <hr>
+        
+        <div style="font-size:10px; color:#8b949e; font-weight:bold; margin-bottom:10px; text-transform:uppercase;">Os Meus Períodos:</div>
         <div id="intervalList"></div>
     </div>
 </div>
 
-<div class="main"><table id="calendar"></table></div>
+<div class="main">
+    <table id="calendar"></table>
+</div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
@@ -97,27 +133,6 @@
     let membros = {}, equipaData = {}, myEmail = "", myDates = [];
     const FERIADOS = ["2026-01-01", "2026-04-03", "2026-04-25", "2026-05-01", "2026-06-04", "2026-06-10", "2026-08-15", "2026-10-05", "2026-11-01", "2026-12-01", "2026-12-08", "2026-12-25"];
 
-    window.login = () => signInWithPopup(auth, provider);
-    
-    window.changePlafond = async (val) => {
-        const novo = (membros[myEmail]?.totalDias || 22) + val;
-        if(novo >= 0) await update(ref(db, 'membros/' + myEmail), { totalDias: novo });
-    };
-
-    window.saveData = async () => {
-        await set(ref(db, 'equipa/' + myEmail), myDates);
-        document.getElementById('msg').innerText = "✅ Guardado com sucesso!";
-        setTimeout(() => document.getElementById('msg').innerText = "", 3000);
-    };
-
-    window.exportPDF = () => html2pdf().from(document.querySelector('.main')).save('Ferias_2026.pdf');
-
-    document.getElementById('themeToggle').onclick = () => {
-        const t = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-        document.body.setAttribute('data-theme', t);
-        document.getElementById('themeToggle').innerText = t === 'dark' ? '☀️' : '🌙';
-    };
-
     const isUtil = (dStr) => {
         const [y, m, d] = dStr.split('-').map(Number);
         const dt = new Date(y, m-1, d);
@@ -134,7 +149,7 @@
             else {
                 const f = (val) => {
                     const [y,m,d] = val.split('-');
-                    const wd = new Date(y,m-1,d).toLocaleDateString('pt',{weekday:'short'});
+                    const wd = new Date(y,m-1,d).toLocaleDateString('pt',{weekday:'short'}).replace('.','');
                     return `${wd} ${d}/${m}`;
                 };
                 res.push(start === end ? f(start) : `${f(start)} a ${f(end)}`);
@@ -159,7 +174,6 @@
         const table = document.getElementById('calendar');
         table.innerHTML = "<tr><th>Mês</th>" + Array.from({length:37}, (_,i)=>`<th>${['S','T','Q','Q','S','S','D'][i%7]}</th>`).join('') + "</tr>";
         
-        // Nome e Stats
         document.getElementById('userName').innerText = "👤 " + (membros[myEmail].nome === "Ines" ? "Inês" : membros[myEmail].nome);
         const total = membros[myEmail].totalDias || 22;
         const gastos = myDates.filter(isUtil).length;
@@ -167,15 +181,13 @@
         document.getElementById('sUsed').innerText = gastos;
         document.getElementById('sLeft').innerText = total - gastos;
 
-        // Legenda e Intervalos
         const leg = document.getElementById('legendArea'); leg.innerHTML = "";
         Object.entries(membros).forEach(([email, m]) => {
             const sobra = (m.totalDias || 22) - (equipaData[email] || []).filter(isUtil).length;
-            leg.innerHTML += `<div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:5px;"><span><span style="display:inline-block; width:10px; height:10px; background:${m.cor}; border-radius:2px; margin-right:5px;"></span>${m.nome === 'Ines' ? 'Inês' : m.nome}</span><b>${sobra}</b></div>`;
+            leg.innerHTML += `<div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:6px;"><span><span style="display:inline-block; width:10px; height:10px; background:${m.cor}; border-radius:2px; margin-right:8px;"></span>${m.nome === 'Ines' ? 'Inês' : m.nome}</span><b>${sobra}</b></div>`;
         });
         document.getElementById('intervalList').innerHTML = getIntervals(myDates).map(i => `<div class="interval-tag">${i}</div>`).join('');
 
-        // Meses
         ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"].forEach((mNome, mIdx) => {
             const row = table.insertRow();
             row.insertCell().className = 'month-name'; row.cells[0].innerText = mNome;
@@ -214,6 +226,29 @@
             while(row.cells.length < 38) row.insertCell();
         });
     }
+
+    // Botões e Eventos
+    document.getElementById('btnLogin').onclick = () => signInWithPopup(auth, provider);
+    document.getElementById('btnSave').onclick = async () => {
+        await set(ref(db, 'equipa/' + myEmail), myDates);
+        document.getElementById('msg').innerText = "✅ Guardado!";
+        setTimeout(() => document.getElementById('msg').innerText = "", 3000);
+    };
+    document.getElementById('btnExport').onclick = () => {
+        const element = document.getElementById('calendar');
+        html2pdf().from(element).set({ margin: 10, filename: 'Ferias_2026.pdf', jsPDF: { orientation: 'landscape' } }).save();
+    };
+    document.getElementById('btnInc').onclick = () => changePlafond(1);
+    document.getElementById('btnDec').onclick = () => changePlafond(-1);
+    async function changePlafond(val) {
+        const novo = (membros[myEmail]?.totalDias || 22) + val;
+        if(novo >= 0) await update(ref(db, 'membros/' + myEmail), { totalDias: novo });
+    }
+    document.getElementById('themeToggle').onclick = () => {
+        const t = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        document.body.setAttribute('data-theme', t);
+        document.getElementById('themeToggle').innerText = t === 'dark' ? '☀️' : '🌙';
+    };
 </script>
 </body>
 </html>
