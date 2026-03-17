@@ -22,30 +22,26 @@
 
         body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); display: flex; margin: 0; height: 100vh; overflow: hidden; }
         
-        /* BARRA LATERAL MAIS PEQUENA */
-        .sidebar { width: 260px; background: var(--card); padding: 20px; border-right: 1px solid var(--border); display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box; }
+        .sidebar { width: 280px; background: var(--card); padding: 20px; border-right: 1px solid var(--border); display: flex; flex-direction: column; box-sizing: border-box; overflow-y: auto; }
         
-        .main { flex-grow: 1; padding: 15px; overflow: hidden; display: flex; align-items: center; }
+        .main { flex-grow: 1; padding: 15px; overflow: hidden; display: flex; flex-direction: column; justify-content: center; }
         
-        /* BOTÃO TEMA CORRIGIDO (width: fit-content) */
-        .theme-toggle { position: absolute; top: 18px; right: 20px; background: var(--toggle-bg); border: 1px solid var(--border); padding: 6px 12px; border-radius: 50px; cursor: pointer; color: var(--text); z-index: 100; width: fit-content; }
+        /* BOTÃO TEMA CORRIGIDO - Pequeno e Circular */
+        .theme-toggle { position: absolute; top: 15px; right: 15px; background: var(--toggle-bg); border: 1px solid var(--border); width: 32px; height: 32px; border-radius: 50%; cursor: pointer; color: var(--text); display: flex; align-items: center; justify-content: center; z-index: 100; font-size: 14px; }
         
         button { cursor: pointer; border-radius: 6px; border: none; padding: 10px; width: 100%; font-weight: bold; margin-bottom: 8px; transition: 0.2s; }
         .btn-google { background: #24292f; color: white; }
         [data-theme="light"] .btn-google { background: white; color: #444; border: 1px solid #ddd; }
         .btn-save { background: var(--green); color: white; }
         .btn-pdf { background: #8250df; color: white; }
-        .btn-logout { background: transparent; color: #8b949e; border: 1px solid var(--border); font-size: 11px; }
+        .btn-logout { background: transparent; color: #8b949e; border: 1px solid var(--border); font-size: 11px; margin-top: 10px; }
 
-        /* TABELA AJUSTADA PARA NÃO ESMAGAR */
         table { border-collapse: collapse; width: 100%; background: var(--card); font-size: 11px; color: var(--text); table-layout: fixed; }
-        th, td { border: 1px solid var(--border); padding: 6px 0; text-align: center; position: relative; }
+        th, td { border: 1px solid var(--border); padding: 7px 0; text-align: center; position: relative; }
         th { background: rgba(128, 128, 128, 0.1); color: #8b949e; font-size: 10px; }
-        .month-name { background: rgba(128, 128, 128, 0.15); text-align: left; padding-left: 8px; font-weight: bold; width: 60px; }
+        .month-name { background: rgba(128, 128, 128, 0.15); text-align: left; padding-left: 8px; font-weight: bold; width: 65px; }
         
         .day { cursor: pointer; }
-        
-        /* CORES DO DIA (SEMPRE VISÍVEIS NO TEXTO) */
         .weekend { color: var(--orange) !important; font-weight: bold; }
         .holiday { color: var(--red) !important; font-weight: bold; }
         .weekend:not(.selected) { background-color: rgba(154, 103, 0, 0.08); }
@@ -60,22 +56,27 @@
         .legend-name { display: flex; align-items: center; gap: 8px; }
         .color-dot { width: 10px; height: 10px; border-radius: 2px; }
         .sobra-pill { font-weight: bold; background: var(--toggle-bg); padding: 2px 6px; border-radius: 10px; font-size: 10px; }
+
+        /* LISTA DE PERÍODOS */
+        .period-list { margin-top: 15px; }
+        .period-item { font-size: 10px; padding: 8px; background: var(--stat-bg); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 5px; border-left: 3px solid var(--blue); }
     </style>
 </head>
 <body data-theme="light">
 
 <div class="sidebar">
-    <button id="themeToggle" class="theme-toggle">🌙</button>
     <div>
-        <h2 style="margin-top:0; font-size: 20px;">🏖️ Férias 2026</h2>
+        <h2 style="margin-top:0; font-size: 22px; display: flex; align-items: center; gap: 10px;">🏖️ Férias 2026</h2>
         <button id="btnLogin" class="btn-google">Entrar com Google</button>
+        
         <div id="userArea" style="display:none">
-            <div id="userInfo" style="font-weight:bold; margin-bottom:15px; color: var(--blue);"></div>
+            <div id="userInfo" style="font-weight:bold; margin-bottom:15px; font-size: 16px;"></div>
             <div class="stats-grid">
-                <div class="stat-box"><span id="statTotal" class="stat-val">22</span><span class="stat-lbl">Plafond</span>
+                <div class="stat-box">
+                    <span id="statTotal" class="stat-val">22</span><span class="stat-lbl">Plafond</span>
                     <div style="display:flex; gap:2px; justify-content:center; margin-top:5px;">
-                        <button style="width:20px; height:20px; padding:0; background: var(--toggle-bg); color: var(--text);" id="btnDec">-</button>
-                        <button style="width:20px; height:20px; padding:0; background: var(--toggle-bg); color: var(--text);" id="btnInc">+</button>
+                        <button style="width:22px; height:22px; padding:0; background: var(--toggle-bg); color: var(--text);" id="btnDec">-</button>
+                        <button style="width:22px; height:22px; padding:0; background: var(--toggle-bg); color: var(--text);" id="btnInc">+</button>
                     </div>
                 </div>
                 <div class="stat-box"><span id="statUsed" class="stat-val">0</span><span class="stat-lbl">Gastos</span></div>
@@ -86,10 +87,15 @@
             <div id="status" style="font-size:11px; text-align:center; height:15px; margin:5px 0; color: var(--green);"></div>
             <hr style="border:0; border-top:1px solid var(--border); margin: 15px 0;">
             <div id="legend"></div>
+            <hr style="border:0; border-top:1px solid var(--border); margin: 15px 0;">
+            <div style="font-size:9px; color:#8b949e; margin-bottom:8px; text-transform: uppercase; font-weight: bold;">Os Meus Períodos:</div>
+            <div id="periodList" class="period-list"></div>
         </div>
     </div>
     <div id="footerSidebar" style="display:none; text-align: center;"><button id="btnLogout" class="btn-logout">Sair</button></div>
 </div>
+
+<button id="themeToggle" class="theme-toggle">🌙</button>
 
 <div class="main" id="calendar-area">
     <table id="calendar"></table>
@@ -127,6 +133,34 @@
         return (dw !== 0 && dw !== 6 && !FERIADOS.includes(dStr));
     }
 
+    // Lógica para gerar os períodos escritos
+    function formatarPeriodos(datas) {
+        if (!datas || datas.length === 0) return "";
+        const sorted = [...datas].sort();
+        let periodos = [];
+        let start = sorted[0];
+        let end = sorted[0];
+
+        for (let i = 1; i <= sorted.length; i++) {
+            let current = sorted[i];
+            let prevDate = new Date(end);
+            let currDate = new Date(current);
+            let diff = (currDate - prevDate) / (1000 * 60 * 60 * 24);
+
+            if (diff === 1) {
+                end = current;
+            } else {
+                const options = { weekday: 'short', day: '2-digit', month: '2-digit' };
+                const sF = new Date(start).toLocaleDateString('pt-PT', options);
+                const eF = new Date(end).toLocaleDateString('pt-PT', options);
+                periodos.push(start === end ? sF : `${sF} a ${eF}`);
+                start = current;
+                end = current;
+            }
+        }
+        return periodos.map(p => `<div class="period-item">${p}</div>`).join('');
+    }
+
     async function checkAccess(user) {
         userEmailEncoded = user.email.replace(/\./g, '_');
         const snap = await get(ref(db, 'membros/' + userEmailEncoded));
@@ -136,10 +170,7 @@
             document.getElementById('btnLogin').style.display = 'none';
             document.getElementById('userInfo').innerText = "👤 " + (snap.val().nome === "Ines" ? "Inês" : snap.val().nome);
             
-            onValue(ref(db, 'membros'), (s) => { 
-                membros = s.val() || {}; 
-                render(); 
-            });
+            onValue(ref(db, 'membros'), (s) => { membros = s.val() || {}; render(); });
             onValue(ref(db, 'equipa'), (s) => { todasFerias = s.val() || {}; minhasFerias = todasFerias[userEmailEncoded] || []; render(); });
         } else { signOut(auth); }
     }
@@ -149,7 +180,7 @@
         table.innerHTML = "<tr><th class='month-name'>Mês</th>" + Array.from({length: 37}, (_, i) => `<th>${['S','T','Q','Q','S','S','D'][i % 7]}</th>`).join('') + "</tr>";
         
         const leg = document.getElementById('legend');
-        leg.innerHTML = "<div style='font-size:9px; color:#8b949e; margin-bottom:8px;'>SOBRA DA EQUIPA:</div>";
+        leg.innerHTML = "<div style='font-size:9px; color:#8b949e; margin-bottom:8px; text-transform: uppercase; font-weight: bold;'>Sobra da Equipa:</div>";
         
         Object.entries(membros).forEach(([email, m]) => {
             const nomeExibicao = m.nome === "Ines" ? "Inês" : m.nome;
@@ -157,6 +188,9 @@
             const sobra = (m.totalDias || 22) - gastos;
             leg.innerHTML += `<div class="legend-item"><div class="legend-name"><div class="color-dot" style="background:${m.cor}"></div><span>${nomeExibicao}</span></div><span class="sobra-pill">${sobra}</span></div>`;
         });
+
+        // Atualizar períodos na barra lateral
+        document.getElementById('periodList').innerHTML = formatarPeriodos(minhasFerias);
 
         const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
         meses.forEach((nome, mIdx) => {
@@ -185,7 +219,6 @@
                     } else {
                         cell.style.background = `linear-gradient(to right, ${membros[users[0]]?.cor} 33%, ${membros[users[1]]?.cor} 33%, ${membros[users[1]]?.cor} 66%, ${membros[users[2]]?.cor} 66%)`;
                     }
-                    // Mantém a cor do número se for dia especial
                     if (!FERIADOS.includes(dStr) && dw !== 0 && dw !== 6) cell.style.color = 'white';
                 }
 
