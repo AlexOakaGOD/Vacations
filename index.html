@@ -39,8 +39,6 @@
         .month-name { background: rgba(128, 128, 128, 0.15); text-align: left; padding-left: 5px; font-weight: bold; width: 80px; }
         
         .day { cursor: pointer; }
-        
-        /* Cores base para FDS e Feriados apenas se não estiverem selecionados */
         .weekend:not([style*="background"]) { background-color: rgba(154, 103, 0, 0.1) !important; color: var(--orange); }
         .holiday:not([style*="background"]) { background-color: rgba(207, 34, 46, 0.1) !important; color: var(--red); }
 
@@ -49,8 +47,10 @@
         .stat-val { display: block; font-size: 18px; font-weight: bold; }
         .stat-lbl { font-size: 9px; color: #8b949e; text-transform: uppercase; }
 
-        .pdf-export { background: white !important; color: black !important; }
-        .pdf-export table { background: white !important; border-color: #ccc !important; }
+        .legend-item { display: flex; align-items: center; justify-content: space-between; font-size: 11px; margin-bottom: 5px; padding: 4px; border-radius: 4px; }
+        .legend-name { display: flex; align-items: center; gap: 8px; }
+        .color-dot { width: 10px; height: 10px; border-radius: 2px; }
+        .sobra-pill { font-weight: bold; background: var(--toggle-bg); padding: 2px 6px; border-radius: 10px; font-size: 10px; }
     </style>
 </head>
 <body data-theme="light">
@@ -65,19 +65,21 @@
             <div class="stats-grid">
                 <div class="stat-box">
                     <span id="statTotal" class="stat-val">22</span>
-                    <span class="stat-lbl">Total</span>
+                    <span class="stat-lbl">Plafond</span>
                     <div style="display:flex; gap:2px; justify-content:center; margin-top:5px;">
                         <button style="width:22px; padding:2px; margin:0; font-size:10px;" id="btnDec">-</button>
                         <button style="width:22px; padding:2px; margin:0; font-size:10px;" id="btnInc">+</button>
                     </div>
                 </div>
-                <div class="stat-box"><span id="statUsed" class="stat-val">0</span><span class="stat-lbl">Úteis</span></div>
-                <div class="stat-box"><span id="statLeft" class="stat-val">22</span><span class="stat-lbl">Restam</span></div>
+                <div class="stat-box"><span id="statUsed" class="stat-val">0</span><span class="stat-lbl">Gastos</span></div>
+                <div class="stat-box"><span id="statLeft" class="stat-val">22</span><span class="stat-lbl">Sobra</span></div>
             </div>
             <button class="btn-save" id="btnSave">☁️ Guardar</button>
             <button class="btn-pdf" id="btnExport">📄 PDF</button>
-            <div id="status" style="font-size:11px; text-align:center; margin:5px 0;">Sincronizado</div>
-            <hr style="border:0; border-top:1px solid var(--border); margin: 15px 0;"><div id="legend"></div>
+            <div id="status" style="font-size:11px; text-align:center; height:15px; margin:5px 0; color: var(--green); font-weight: bold;"></div>
+            <hr style="border:0; border-top:1px solid var(--border); margin: 15px 0;">
+            <div style="font-size: 10px; color: #8b949e; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">Sobra da Equipa:</div>
+            <div id="legend"></div>
         </div>
     </div>
     <div id="footerSidebar" style="display:none; text-align: center;"><button id="btnLogout" class="btn-logout">Sair</button></div>
@@ -107,19 +109,19 @@
     const provider = new GoogleAuthProvider();
 
     let membros = {}; let todasFerias = {}; let userEmailEncoded = ""; let minhasFerias = [];
-    const FERIADOS = ["2026-01-01", "2026-04-03", "2026-04-25", "2026-05-01", "2026-06-10", "2026-08-15", "2026-10-05", "2026-11-01", "2026-12-01", "2026-12-08", "2026-12-25"];
+    
+    // 04-06 (Corpo de Deus) adicionado
+    const FERIADOS = ["2026-01-01", "2026-04-03", "2026-04-25", "2026-05-01", "2026-06-04", "2026-06-10", "2026-08-15", "2026-10-05", "2026-11-01", "2026-12-01", "2026-12-08", "2026-12-25"];
 
     const updateTheme = (t) => { document.body.setAttribute('data-theme', t); localStorage.setItem('theme', t); document.getElementById('themeToggle').innerText = t === 'dark' ? '☀️' : '🌙'; };
     updateTheme(localStorage.getItem('theme') || 'light');
     document.getElementById('themeToggle').onclick = () => updateTheme(document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
 
-    // Lógica de dia útil sem falhas (usa strings de data locais)
     function isDiaUtil(dStr) {
         const parts = dStr.split('-');
         const d = new Date(parts[0], parts[1] - 1, parts[2]);
         const dw = d.getDay(); 
-        // 0 é Domingo, 6 é Sábado. Se dw for entre 1 e 5 e não for feriado, é útil.
-        return dw !== 0 && dw !== 6 && !FERIADOS.includes(dStr);
+        return dw !== 0 && dw dw !== 6 && !FERIADOS.includes(dStr);
     }
 
     async function checkAccess(user) {
@@ -130,7 +132,12 @@
             document.getElementById('footerSidebar').style.display = 'block';
             document.getElementById('btnLogin').style.display = 'none';
             document.getElementById('userInfo').innerText = "👤 " + snap.val().nome;
-            onValue(ref(db, 'membros'), (s) => { membros = s.val() || {}; render(); });
+            onValue(ref(db, 'membros'), (s) => { 
+                membros = s.val() || {}; 
+                // Correção do nome Inês no objeto local
+                Object.keys(membros).forEach(k => { if(membros[k].nome === "Ines") membros[k].nome = "Inês"; });
+                render(); 
+            });
             onValue(ref(db, 'equipa'), (s) => { todasFerias = s.val() || {}; minhasFerias = todasFerias[userEmailEncoded] || []; render(); });
         } else { signOut(auth); }
     }
@@ -139,60 +146,54 @@
         const table = document.getElementById('calendar');
         table.innerHTML = "<tr><th>Mês</th>" + Array.from({length: 37}, (_, i) => `<th>${['S','T','Q','Q','S','S','D'][i % 7]}</th>`).join('') + "</tr>";
         
+        // Renderizar Legenda com Cálculo de Sobra
         const leg = document.getElementById('legend');
         leg.innerHTML = "";
-        Object.values(membros).forEach(m => {
-            leg.innerHTML += `<div style="display:flex;align-items:center;gap:5px;font-size:11px;margin-bottom:3px;"><div style="width:10px;height:10px;background:${m.cor};border-radius:2px;"></div>${m.nome}</div>`;
+        Object.entries(membros).forEach(([email, m]) => {
+            const diasGastos = (todasFerias[email] || []).filter(d => isDiaUtil(d)).length;
+            const sobra = (m.totalDias || 22) - diasGastos;
+            leg.innerHTML += `
+                <div class="legend-item">
+                    <div class="legend-name">
+                        <div class="color-dot" style="background:${m.cor}"></div>
+                        <span>${m.nome}</span>
+                    </div>
+                    <span class="sobra-pill">${sobra}</span>
+                </div>`;
         });
 
-        // Contagem rigorosa
         let uteisGastos = 0;
-        minhasFerias.forEach(diaStr => {
-            if(isDiaUtil(diaStr)) uteisGastos++;
-        });
+        minhasFerias.forEach(d => { if(isDiaUtil(d)) uteisGastos++; });
 
         const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
         meses.forEach((nome, mIdx) => {
             let row = table.insertRow();
             row.insertCell().className = 'month-name'; row.cells[0].innerText = nome;
-            
             let d = new Date(2026, mIdx, 1);
             let offset = d.getDay() === 0 ? 6 : d.getDay() - 1;
             for(let i=0; i<offset; i++) row.insertCell();
             
             while(d.getMonth() === mIdx) {
                 let cell = row.insertCell(); 
-                // Gerar string local para evitar problemas de UTC
-                let dayNum = d.getDate();
-                let dStr = `2026-${String(mIdx + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
+                let dStr = `2026-${String(mIdx + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                cell.innerText = d.getDate(); cell.className = 'day';
                 
-                cell.innerText = dayNum; cell.className = 'day';
-                
-                const dw = d.getDay();
                 if (FERIADOS.includes(dStr)) cell.classList.add('holiday');
-                else if (dw === 0 || dw === 6) cell.classList.add('weekend');
+                else if (d.getDay() === 0 || d.getDay() === 6) cell.classList.add('weekend');
 
-                // Pintar Seleções
-                let usersComFerias = Object.keys(todasFerias).filter(e => todasFerias[e]?.includes(dStr));
-                if (usersComFerias.length > 0) {
-                    if (usersComFerias.length === 1) {
-                        cell.style.backgroundColor = membros[usersComFerias[0]].cor;
-                    } else {
-                        cell.style.background = `linear-gradient(135deg, ${membros[usersComFerias[0]].cor} 50%, ${membros[usersComFerias[1]].cor} 50%)`;
-                    }
+                let users = Object.keys(todasFerias).filter(e => todasFerias[e]?.includes(dStr));
+                if (users.length >= 1) {
+                    if (users.length === 1) cell.style.backgroundColor = membros[users[0]]?.cor;
+                    else cell.style.background = `linear-gradient(135deg, ${membros[users[0]]?.cor} 50%, ${membros[users[1]]?.cor} 50%)`;
                     cell.style.color = 'white';
-                } else {
-                    cell.style.background = ""; cell.style.backgroundColor = ""; cell.style.color = "";
                 }
 
                 cell.onclick = () => {
                     if (minhasFerias.includes(dStr)) {
                         minhasFerias = minhasFerias.filter(v => v !== dStr);
                     } else {
-                        // Se for dia útil, valida o plafond
-                        if (isDiaUtil(dStr)) {
-                            const max = membros[userEmailEncoded]?.totalDias || 22;
-                            if (uteisGastos >= max) { alert("Limite de dias úteis atingido!"); return; }
+                        if (isDiaUtil(dStr) && uteisGastos >= (membros[userEmailEncoded]?.totalDias || 22)) {
+                            alert("Limite atingido!"); return;
                         }
                         minhasFerias.push(dStr);
                     }
@@ -204,10 +205,10 @@
             while(row.cells.length < 38) row.insertCell();
         });
 
-        const plafond = membros[userEmailEncoded]?.totalDias || 22;
-        document.getElementById('statTotal').innerText = plafond;
+        const total = membros[userEmailEncoded]?.totalDias || 22;
+        document.getElementById('statTotal').innerText = total;
         document.getElementById('statUsed').innerText = uteisGastos;
-        document.getElementById('statLeft').innerText = plafond - uteisGastos;
+        document.getElementById('statLeft').innerText = total - uteisGastos;
     }
 
     document.getElementById('btnInc').onclick = () => ajustarDias(1);
@@ -229,9 +230,12 @@
     onAuthStateChanged(auth, (u) => { u ? checkAccess(u) : (document.getElementById('userArea').style.display = 'none', document.getElementById('btnLogin').style.display = 'block'); });
     document.getElementById('btnLogin').onclick = () => signInWithPopup(auth, provider);
     document.getElementById('btnLogout').onclick = () => signOut(auth);
+    
     document.getElementById('btnSave').onclick = async () => {
         await set(ref(db, 'equipa/' + userEmailEncoded), minhasFerias);
-        document.getElementById('status').innerText = "✅ Guardado!";
+        const st = document.getElementById('status');
+        st.innerText = "✅ Guardado!";
+        setTimeout(() => { st.innerText = ""; }, 5000);
     };
 </script>
 </body>
