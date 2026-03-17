@@ -20,12 +20,27 @@
             --orange: #9a6700; --toggle-bg: #eeeeee;
         }
 
-        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); display: flex; margin: 0; height: 100vh; overflow: hidden; }
+        body { 
+            font-family: -apple-system, system-ui, sans-serif; 
+            background: var(--bg); 
+            color: var(--text); 
+            display: flex; 
+            margin: 0; 
+            height: 100vh; 
+            overflow: hidden; 
+        }
         
         .sidebar { 
-            width: 260px; min-width: 260px; 
-            background: var(--card); padding: 15px; border-right: 1px solid var(--border); 
-            display: flex; flex-direction: column; box-sizing: border-box; overflow-y: auto; 
+            width: 260px; 
+            min-width: 260px; 
+            background: var(--card); 
+            padding: 15px; 
+            border-right: 1px solid var(--border); 
+            display: flex; 
+            flex-direction: column; 
+            box-sizing: border-box; 
+            overflow-y: auto; 
+            z-index: 10;
         }
 
         .sidebar-header { 
@@ -41,14 +56,14 @@
 
         .main { 
             flex-grow: 1; 
-            padding: 10px; 
+            padding: 20px; 
             overflow: auto; 
             display: flex; 
-            align-items: flex-start; 
-            justify-content: center; 
+            align-items: center;      /* Centraliza verticalmente */
+            justify-content: center;   /* Centraliza horizontalmente */
+            background: var(--bg);
         }
 
-        /* Botões Circulares do Topo */
         .theme-toggle, .btn-logout-top { 
             background: var(--toggle-bg); border: 1px solid var(--border); 
             width: 32px; height: 32px; border-radius: 50%; cursor: pointer; 
@@ -62,7 +77,7 @@
         .btn-save { background: var(--green); color: white; }
         .btn-pdf { background: #8250df; color: white; }
 
-        /* Tabela */
+        /* Tabela Centralizada e Fixa */
         table { 
             border-collapse: collapse; 
             background: var(--card); 
@@ -70,20 +85,24 @@
             color: var(--text); 
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
             table-layout: fixed;
-            width: auto;
+            width: 1050px; /* Largura total calculada para evitar quebras */
+            min-width: 1050px;
         }
         
         th, td { 
             border: 1px solid var(--border); 
             width: 26px; 
+            min-width: 26px;
+            max-width: 26px;
             height: 26px;
             text-align: center; 
             padding: 0;
             line-height: 26px;
+            box-sizing: border-box;
         }
 
         th { font-size: 9px; color: #8b949e; font-weight: normal; }
-        .month-name { background: rgba(128, 128, 128, 0.1); text-align: left; padding-left: 8px; font-weight: bold; width: 60px; }
+        .month-name { background: rgba(128, 128, 128, 0.1); text-align: left; padding-left: 8px; font-weight: bold; width: 60px; min-width: 60px; }
         .day { cursor: pointer; transition: 0.1s; }
         .day:hover { filter: brightness(1.2); }
         .weekend { color: var(--orange) !important; font-weight: bold; background: rgba(255, 255, 255, 0.02); }
@@ -145,7 +164,6 @@
     import { getDatabase, ref, set, onValue, get, update } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
-    // ATENÇÃO: Se fores publicar no GitHub, remove a apiKey daqui e usa variáveis de ambiente!
     const firebaseConfig = {
         apiKey: "AIzaSyA9V2yj_wYiR9o6G-jv-9oxH2Roxb91RPQ",
         authDomain: "vacations-f36d6.firebaseapp.com",
@@ -162,7 +180,6 @@
     let membros = {}; let todasFerias = {}; let userEmailEncoded = ""; let minhasFerias = [];
     const FERIADOS = ["2026-01-01", "2026-04-03", "2026-04-05", "2026-04-25", "2026-05-01", "2026-06-04", "2026-06-10", "2026-08-15", "2026-10-05", "2026-11-01", "2026-12-01", "2026-12-08", "2026-12-25"];
 
-    // Lógica do Tema
     const themeBtn = document.getElementById('themeToggle');
     themeBtn.onclick = () => {
         const current = document.body.getAttribute('data-theme');
@@ -282,7 +299,12 @@
 
     document.getElementById('btnExport').onclick = () => {
         const element = document.getElementById('calendar-area');
-        html2pdf().set({ margin: 5, filename: 'Ferias_2026.pdf', jsPDF: { orientation: 'landscape' } }).from(element).save();
+        html2pdf().set({ 
+            margin: 5, 
+            filename: 'Ferias_2026.pdf', 
+            html2canvas: { scale: 2 },
+            jsPDF: { orientation: 'landscape', unit: 'mm', format: 'a4' } 
+        }).from(element).save();
     };
 
     onAuthStateChanged(auth, u => u ? checkAccess(u) : signInWithPopup(auth, provider));
