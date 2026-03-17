@@ -21,10 +21,14 @@
         }
 
         body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); display: flex; margin: 0; height: 100vh; overflow: hidden; }
-        .sidebar { width: 300px; background: var(--card); padding: 20px; border-right: 1px solid var(--border); display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box; }
-        .main { flex-grow: 1; padding: 25px; overflow-y: auto; }
         
-        .theme-toggle { position: absolute; top: 18px; right: 20px; background: var(--toggle-bg); border: 1px solid var(--border); padding: 6px 12px; border-radius: 50px; cursor: pointer; color: var(--text); z-index: 100; }
+        /* BARRA LATERAL MAIS PEQUENA */
+        .sidebar { width: 260px; background: var(--card); padding: 20px; border-right: 1px solid var(--border); display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box; }
+        
+        .main { flex-grow: 1; padding: 15px; overflow: hidden; display: flex; align-items: center; }
+        
+        /* BOTÃO TEMA CORRIGIDO (width: fit-content) */
+        .theme-toggle { position: absolute; top: 18px; right: 20px; background: var(--toggle-bg); border: 1px solid var(--border); padding: 6px 12px; border-radius: 50px; cursor: pointer; color: var(--text); z-index: 100; width: fit-content; }
         
         button { cursor: pointer; border-radius: 6px; border: none; padding: 10px; width: 100%; font-weight: bold; margin-bottom: 8px; transition: 0.2s; }
         .btn-google { background: #24292f; color: white; }
@@ -33,15 +37,19 @@
         .btn-pdf { background: #8250df; color: white; }
         .btn-logout { background: transparent; color: #8b949e; border: 1px solid var(--border); font-size: 11px; }
 
-        table { border-collapse: collapse; width: 100%; background: var(--card); font-size: 10px; color: var(--text); table-layout: fixed; }
-        th, td { border: 1px solid var(--border); height: 28px; text-align: center; position: relative; }
-        th { background: rgba(128, 128, 128, 0.1); color: #8b949e; }
-        .month-name { background: rgba(128, 128, 128, 0.15); text-align: left; padding-left: 5px; font-weight: bold; width: 80px; }
+        /* TABELA AJUSTADA PARA NÃO ESMAGAR */
+        table { border-collapse: collapse; width: 100%; background: var(--card); font-size: 11px; color: var(--text); table-layout: fixed; }
+        th, td { border: 1px solid var(--border); padding: 6px 0; text-align: center; position: relative; }
+        th { background: rgba(128, 128, 128, 0.1); color: #8b949e; font-size: 10px; }
+        .month-name { background: rgba(128, 128, 128, 0.15); text-align: left; padding-left: 8px; font-weight: bold; width: 60px; }
         
         .day { cursor: pointer; }
-        /* Cores de fundo para fds/feriado se NÃO estiver selecionado */
-        .weekend:not(.selected) { background-color: rgba(154, 103, 0, 0.1) !important; color: var(--orange); }
-        .holiday:not(.selected) { background-color: rgba(207, 34, 46, 0.1) !important; color: var(--red); }
+        
+        /* CORES DO DIA (SEMPRE VISÍVEIS NO TEXTO) */
+        .weekend { color: var(--orange) !important; font-weight: bold; }
+        .holiday { color: var(--red) !important; font-weight: bold; }
+        .weekend:not(.selected) { background-color: rgba(154, 103, 0, 0.08); }
+        .holiday:not(.selected) { background-color: rgba(207, 34, 46, 0.08); }
 
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin: 15px 0; }
         .stat-box { background: var(--stat-bg); padding: 8px; border-radius: 6px; border: 1px solid var(--border); text-align: center; }
@@ -59,15 +67,15 @@
 <div class="sidebar">
     <button id="themeToggle" class="theme-toggle">🌙</button>
     <div>
-        <h2 style="margin-top:0">🏖️ Férias 2026</h2>
+        <h2 style="margin-top:0; font-size: 20px;">🏖️ Férias 2026</h2>
         <button id="btnLogin" class="btn-google">Entrar com Google</button>
         <div id="userArea" style="display:none">
-            <div id="userInfo" style="font-weight:bold; margin-bottom:15px;"></div>
+            <div id="userInfo" style="font-weight:bold; margin-bottom:15px; color: var(--blue);"></div>
             <div class="stats-grid">
                 <div class="stat-box"><span id="statTotal" class="stat-val">22</span><span class="stat-lbl">Plafond</span>
                     <div style="display:flex; gap:2px; justify-content:center; margin-top:5px;">
-                        <button style="width:20px; padding:0;" id="btnDec">-</button>
-                        <button style="width:20px; padding:0;" id="btnInc">+</button>
+                        <button style="width:20px; height:20px; padding:0; background: var(--toggle-bg); color: var(--text);" id="btnDec">-</button>
+                        <button style="width:20px; height:20px; padding:0; background: var(--toggle-bg); color: var(--text);" id="btnInc">+</button>
                     </div>
                 </div>
                 <div class="stat-box"><span id="statUsed" class="stat-val">0</span><span class="stat-lbl">Gastos</span></div>
@@ -108,18 +116,15 @@
     let membros = {}; let todasFerias = {}; let userEmailEncoded = ""; let minhasFerias = [];
     const FERIADOS = ["2026-01-01", "2026-04-03", "2026-04-25", "2026-05-01", "2026-06-04", "2026-06-10", "2026-08-15", "2026-10-05", "2026-11-01", "2026-12-01", "2026-12-08", "2026-12-25"];
 
-    // Tema
     const updateTheme = (t) => { document.body.setAttribute('data-theme', t); localStorage.setItem('theme', t); document.getElementById('themeToggle').innerText = t === 'dark' ? '☀️' : '🌙'; };
     updateTheme(localStorage.getItem('theme') || 'light');
     document.getElementById('themeToggle').onclick = () => updateTheme(document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
 
-    // FUNÇÃO CRÍTICA CORRIGIDA
     function isDiaUtil(dStr) {
         const parts = dStr.split('-');
         const d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
         const dw = d.getDay(); 
-        const util = (dw !== 0 && dw !== 6 && !FERIADOS.includes(dStr));
-        return util;
+        return (dw !== 0 && dw !== 6 && !FERIADOS.includes(dStr));
     }
 
     async function checkAccess(user) {
@@ -133,7 +138,6 @@
             
             onValue(ref(db, 'membros'), (s) => { 
                 membros = s.val() || {}; 
-                Object.keys(membros).forEach(k => { if(membros[k].nome === "Ines") membros[k].nome = "Inês"; });
                 render(); 
             });
             onValue(ref(db, 'equipa'), (s) => { todasFerias = s.val() || {}; minhasFerias = todasFerias[userEmailEncoded] || []; render(); });
@@ -142,18 +146,17 @@
 
     function render() {
         const table = document.getElementById('calendar');
-        table.innerHTML = "<tr><th>Mês</th>" + Array.from({length: 37}, (_, i) => `<th>${['S','T','Q','Q','S','S','D'][i % 7]}</th>`).join('') + "</tr>";
+        table.innerHTML = "<tr><th class='month-name'>Mês</th>" + Array.from({length: 37}, (_, i) => `<th>${['S','T','Q','Q','S','S','D'][i % 7]}</th>`).join('') + "</tr>";
         
         const leg = document.getElementById('legend');
         leg.innerHTML = "<div style='font-size:9px; color:#8b949e; margin-bottom:8px;'>SOBRA DA EQUIPA:</div>";
         
         Object.entries(membros).forEach(([email, m]) => {
+            const nomeExibicao = m.nome === "Ines" ? "Inês" : m.nome;
             const gastos = (todasFerias[email] || []).filter(d => isDiaUtil(d)).length;
             const sobra = (m.totalDias || 22) - gastos;
-            leg.innerHTML += `<div class="legend-item"><div class="legend-name"><div class="color-dot" style="background:${m.cor}"></div><span>${m.nome}</span></div><span class="sobra-pill">${sobra}</span></div>`;
+            leg.innerHTML += `<div class="legend-item"><div class="legend-name"><div class="color-dot" style="background:${m.cor}"></div><span>${nomeExibicao}</span></div><span class="sobra-pill">${sobra}</span></div>`;
         });
-
-        let uteisGastos = minhasFerias.filter(d => isDiaUtil(d)).length;
 
         const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
         meses.forEach((nome, mIdx) => {
@@ -175,17 +178,24 @@
                 let users = Object.keys(todasFerias).filter(e => todasFerias[e]?.includes(dStr));
                 if (users.length >= 1) {
                     cell.classList.add('selected');
-                    if (users.length === 1) cell.style.backgroundColor = membros[users[0]]?.cor;
-                    else cell.style.background = `linear-gradient(135deg, ${membros[users[0]]?.cor} 50%, ${membros[users[1]]?.cor} 50%)`;
-                    cell.style.color = 'white';
+                    if (users.length === 1) {
+                        cell.style.backgroundColor = membros[users[0]]?.cor;
+                    } else if (users.length === 2) {
+                        cell.style.background = `linear-gradient(to right, ${membros[users[0]]?.cor} 50%, ${membros[users[1]]?.cor} 50%)`;
+                    } else {
+                        cell.style.background = `linear-gradient(to right, ${membros[users[0]]?.cor} 33%, ${membros[users[1]]?.cor} 33%, ${membros[users[1]]?.cor} 66%, ${membros[users[2]]?.cor} 66%)`;
+                    }
+                    // Mantém a cor do número se for dia especial
+                    if (!FERIADOS.includes(dStr) && dw !== 0 && dw !== 6) cell.style.color = 'white';
                 }
 
                 cell.onclick = () => {
                     if (minhasFerias.includes(dStr)) {
                         minhasFerias = minhasFerias.filter(v => v !== dStr);
                     } else {
-                        if (isDiaUtil(dStr) && uteisGastos >= (membros[userEmailEncoded]?.totalDias || 22)) {
-                            alert("Limite de dias úteis atingido!"); return;
+                        const uteis = minhasFerias.filter(d => isDiaUtil(d)).length;
+                        if (isDiaUtil(dStr) && uteis >= (membros[userEmailEncoded]?.totalDias || 22)) {
+                            alert("Limite de dias atingido!"); return;
                         }
                         minhasFerias.push(dStr);
                     }
@@ -198,6 +208,7 @@
         });
 
         const total = membros[userEmailEncoded]?.totalDias || 22;
+        const uteisGastos = minhasFerias.filter(d => isDiaUtil(d)).length;
         document.getElementById('statTotal').innerText = total;
         document.getElementById('statUsed').innerText = uteisGastos;
         document.getElementById('statLeft').innerText = total - uteisGastos;
@@ -212,9 +223,8 @@
 
     document.getElementById('btnSave').onclick = async () => {
         await set(ref(db, 'equipa/' + userEmailEncoded), minhasFerias);
-        const st = document.getElementById('status');
-        st.innerText = "✅ Guardado!";
-        setTimeout(() => { st.innerText = ""; }, 5000);
+        document.getElementById('status').innerText = "✅ Guardado!";
+        setTimeout(() => { document.getElementById('status').innerText = ""; }, 3000);
     };
 
     document.getElementById('btnExport').onclick = () => html2pdf().from(document.getElementById('calendar-area')).save('Ferias_2026.pdf');
